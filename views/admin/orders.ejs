@@ -15,11 +15,11 @@
   <h2>📦 Orders (<%= status %>)</h2>
 
   <div class="tabs">
-    <a href="/admin/orders?status=DRAFT">DRAFT</a>
-    <a href="/admin/orders?status=APPROVED">APPROVED</a>
-    <a href="/admin/orders?status=DELIVERED">DELIVERED</a>
-    <a href="/admin/orders?status=REJECTED">REJECTED</a>
-    <a href="/admin/settings">⚙️ Settings</a>
+    <a href="/admin/orders?status=DRAFT&key=<%= key %>">DRAFT</a>
+    <a href="/admin/orders?status=APPROVED&key=<%= key %>">APPROVED</a>
+    <a href="/admin/orders?status=DELIVERED&key=<%= key %>">DELIVERED</a>
+    <a href="/admin/orders?status=REJECTED&key=<%= key %>">REJECTED</a>
+    <a href="/admin/settings?key=<%= key %>">⚙️ Settings</a>
   </div>
 
   <table>
@@ -41,9 +41,10 @@
         <td>₹<%= o.total %></td>
         <td><%= o.delivery_day %></td>
         <td><%= o.payment_status %></td>
-        <td><a href="/admin/orders/<%= o.id %>">Open</a></td>
+        <td><a href="/admin/orders/<%= o.id %>?key=<%= key %>">Open</a></td>
       </tr>
     <% }) %>
   </table>
 </body>
 </html>
+

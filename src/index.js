@@ -10,6 +10,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/**
+ * Simple admin key protection
+ * Use: /admin/settings?key=12345
+ */
+app.use("/admin", (req, res, next) => {
+  const key = req.query.key;
+  if (process.env.ADMIN_KEY && key !== process.env.ADMIN_KEY) {
+    return res.status(401).send("Unauthorized. Add ?key=YOURKEY");
+  }
+  next();
+});
+
 // EJS view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
@@ -25,7 +37,7 @@ app.get("/", (req, res) => res.send("Order Management System ✅ Running"));
 // Settings page
 app.get("/admin/settings", async (req, res) => {
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
-  res.render("admin/settings", { settings });
+  res.render("admin/settings", { settings, key: req.query.key });
 });
 
 app.post("/admin/settings", async (req, res) => {
@@ -76,7 +88,7 @@ app.get("/admin/orders", async (req, res) => {
     )
   ).rows;
 
-  res.render("admin/orders", { orders, status });
+  res.render("admin/orders", { orders, status, key: req.query.key });
 });
 
 // Order detail
@@ -97,7 +109,7 @@ app.get("/admin/orders/:id", async (req, res) => {
 
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
 
-  res.render("admin/order_detail", { order, settings });
+  res.render("admin/order_detail", { order, settings, key: req.query.key });
 });
 
 // Update order fields
@@ -229,3 +241,5 @@ app.post("/webhook", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port", PORT));
+
+
