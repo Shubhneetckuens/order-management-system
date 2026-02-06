@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial; padding: 16px; max-width: 600px; margin: auto; }
+    input { width: 100%; padding: 10px; margin: 6px 0; }
+    button { padding: 12px; width: 100%; font-size: 16px; }
+    a { display:inline-block; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h2>⚙️ Settings</h2>
+
+  <a href="/admin/orders?status=DRAFT">📦 View Orders</a>
+
+  <form method="POST" action="/admin/settings">
+    <label>Product Name</label>
+    <input name="product_name" value="<%= settings.product_name %>" />
+
+    <label>Unit Label</label>
+    <input name="unit_label" value="<%= settings.unit_label %>" />
+
+    <label>Today Price Per Unit</label>
+    <input name="today_price_per_unit" value="<%= settings.today_price_per_unit %>" />
+
+    <label>Free Delivery Threshold</label>
+    <input name="free_delivery_threshold" value="<%= settings.free_delivery_threshold %>" />
+
+    <label>Delivery Charge Amount</label>
+    <input name="delivery_charge_amount" value="<%= settings.delivery_charge_amount %>" />
+
+    <label>UPI ID</label>
+    <input name="upi_id" value="<%= settings.upi_id %>" />
+
+    <button type="submit">Save Settings</button>
+  </form>
+</body>
+</html>

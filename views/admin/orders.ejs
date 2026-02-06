@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial; padding: 16px; max-width: 900px; margin: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+    a { text-decoration: none; }
+    .tabs a { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h2>📦 Orders (<%= status %>)</h2>
+
+  <div class="tabs">
+    <a href="/admin/orders?status=DRAFT">DRAFT</a>
+    <a href="/admin/orders?status=APPROVED">APPROVED</a>
+    <a href="/admin/orders?status=DELIVERED">DELIVERED</a>
+    <a href="/admin/orders?status=REJECTED">REJECTED</a>
+    <a href="/admin/settings">⚙️ Settings</a>
+  </div>
+
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Phone</th>
+      <th>Qty</th>
+      <th>Total</th>
+      <th>Delivery</th>
+      <th>Payment</th>
+      <th>Open</th>
+    </tr>
+
+    <% orders.forEach(o => { %>
+      <tr>
+        <td><%= o.id %></td>
+        <td><%= o.phone %></td>
+        <td><%= o.qty %> <%= o.unit_label %></td>
+        <td>₹<%= o.total %></td>
+        <td><%= o.delivery_day %></td>
+        <td><%= o.payment_status %></td>
+        <td><a href="/admin/orders/<%= o.id %>">Open</a></td>
+      </tr>
+    <% }) %>
+  </table>
+</body>
+</html>

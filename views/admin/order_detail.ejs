@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Order Detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial; padding: 16px; max-width: 700px; margin: auto; }
+    input, select, textarea { width: 100%; padding: 10px; margin: 6px 0; }
+    button { padding: 12px; width: 100%; font-size: 16px; margin-top: 8px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    a { display:inline-block; margin: 8px 0; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <a href="/admin/orders?status=<%= order.status %>">⬅ Back</a>
+
+  <h2>🧾 Order #<%= order.id %></h2>
+
+  <div class="card">
+    <b>Customer Phone:</b> <%= order.phone %><br/>
+    <b>Status:</b> <%= order.status %><br/>
+    <b>Payment:</b> <%= order.payment_status %><br/>
+    <b>Total:</b> ₹<%= order.total %>
+  </div>
+
+  <div class="card">
+    <h3>Edit Order</h3>
+
+    <form method="POST" action="/admin/orders/<%= order.id %>/update">
+      <div class="row">
+        <div>
+          <label>Qty</label>
+          <input name="qty" value="<%= order.qty %>" />
+        </div>
+
+        <div>
+          <label>Price Per Unit</label>
+          <input name="price_per_unit" value="<%= order.price_per_unit %>" />
+        </div>
+      </div>
+
+      <label>Delivery Day</label>
+      <select name="delivery_day">
+        <option value="TODAY" <%= order.delivery_day === "TODAY" ? "selected" : "" %>>TODAY</option>
+        <option value="TOMORROW" <%= order.delivery_day === "TOMORROW" ? "selected" : "" %>>TOMORROW</option>
+      </select>
+
+      <label>Address</label>
+      <textarea name="address_snapshot" rows="3"><%= order.address_snapshot %></textarea>
+
+      <button type="submit">💾 Save Order Changes</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Order Actions</h3>
+
+    <form method="POST" action="/admin/orders/<%= order.id %>/approve">
+      <button type="submit">✅ Approve</button>
+    </form>
+
+    <form method="POST" action="/admin/orders/<%= order.id %>/reject">
+      <button type="submit">❌ Reject</button>
+    </form>
+
+    <form method="POST" action="/admin/orders/<%= order.id %>/delivered">
+      <button type="submit">🚚 Mark Delivered</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Manual Payment</h3>
+
+    <form method="POST" action="/admin/orders/<%= order.id %>/payment">
+      <label>Payment Status</label>
+      <select name="payment_status">
+        <option value="UNPAID" <%= order.payment_status === "UNPAID" ? "selected" : "" %>>UNPAID</option>
+        <option value="PAID" <%= order.payment_status === "PAID" ? "selected" : "" %>>PAID</option>
+      </select>
+
+      <label>Payment Method</label>
+      <select name="payment_method">
+        <option value="">--select--</option>
+        <option value="UPI" <%= order.payment_method === "UPI" ? "selected" : "" %>>UPI</option>
+        <option value="CASH" <%= order.payment_method === "CASH" ? "selected" : "" %>>CASH</option>
+        <option value="OTHER" <%= order.payment_method === "OTHER" ? "selected" : "" %>>OTHER</option>
+      </select>
+
+      <label>Note</label>
+      <textarea name="payment_note" rows="2"><%= order.payment_note || "" %></textarea>
+
+      <button type="submit">💰 Update Payment</button>
+    </form>
+  </div>
+</body>
+</html>
