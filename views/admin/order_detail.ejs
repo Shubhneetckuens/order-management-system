@@ -27,7 +27,7 @@
   <div class="card">
     <h3>Edit Order</h3>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/update">
+    <form method="POST" action="/admin/orders/<%= order.id %>/update?key=<%= key %>">
       <div class="row">
         <div>
           <label>Qty</label>
@@ -56,15 +56,15 @@
   <div class="card">
     <h3>Order Actions</h3>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/approve">
+    <form method="POST" action="/admin/orders/<%= order.id %>/approve?key=<%= key %>">
       <button type="submit">✅ Approve</button>
     </form>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/reject">
+    <form method="POST" action="/admin/orders/<%= order.id %>/reject?key=<%= key %>">
       <button type="submit">❌ Reject</button>
     </form>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/delivered">
+    <form method="POST" action="/admin/orders/<%= order.id %>/delivered?key=<%= key %>">
       <button type="submit">🚚 Mark Delivered</button>
     </form>
   </div>
@@ -72,7 +72,7 @@
   <div class="card">
     <h3>Manual Payment</h3>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/payment">
+    <form method="POST" action="/admin/orders/<%= order.id %>/payment?key=<%= key %>">
       <label>Payment Status</label>
       <select name="payment_status">
         <option value="UNPAID" <%= order.payment_status === "UNPAID" ? "selected" : "" %>>UNPAID</option>
@@ -95,4 +95,5 @@
   </div>
 </body>
 </html>
+
 
