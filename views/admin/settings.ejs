@@ -15,7 +15,7 @@
 
   <a href="/admin/orders?status=DRAFT&key=<%= key %>">📦 View Orders</a>
 
-  <form method="POST" action="/admin/settings">
+  <form method="POST" action="/admin/settings?key=<%= key %>">
     <label>Product Name</label>
     <input name="product_name" value="<%= settings.product_name %>" />
 
@@ -38,4 +38,5 @@
   </form>
 </body>
 </html>
+
 
