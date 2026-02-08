@@ -7,17 +7,12 @@
   <style>
     body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b1220;color:#e8eefc}
     .wrap{max-width:420px;margin:0 auto;padding:22px}
-    .card{margin-top:40px;border:1px solid rgba(255,255,255,.10);border-radius:16px;
-          background:rgba(255,255,255,.04);padding:16px}
+    .card{margin-top:40px;border:1px solid rgba(255,255,255,.10);border-radius:16px;background:rgba(255,255,255,.04);padding:16px}
     h2{margin:0 0 12px}
     label{display:block;color:#a7b4d6;font-size:12px;margin:10px 0 6px}
-    input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);
-          background:rgba(10,16,30,.55);color:#e8eefc;outline:none}
-    button{width:100%;margin-top:14px;padding:12px;border-radius:14px;border:0;
-           background:linear-gradient(90deg,#5eead4,#60a5fa);color:#07111f;font-weight:800;cursor:pointer}
-    .err{margin:10px 0 0;padding:10px;border-radius:12px;background:rgba(251,113,133,.12);
-         border:1px solid rgba(251,113,133,.35);color:#ffd7de}
-    .muted{color:#a7b4d6;font-size:12px;margin-top:10px}
+    input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(10,16,30,.55);color:#e8eefc;outline:none}
+    button{width:100%;margin-top:14px;padding:12px;border-radius:14px;border:0;background:linear-gradient(90deg,#5eead4,#60a5fa);color:#07111f;font-weight:800;cursor:pointer}
+    .err{margin:10px 0 0;padding:10px;border-radius:12px;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.35);color:#ffd7de}
   </style>
 </head>
 <body>
@@ -31,15 +26,13 @@
 
       <form method="POST" action="/login">
         <label>Username</label>
-        <input name="username" placeholder="admin" autocomplete="username" />
+        <input name="username" autocomplete="username" />
 
         <label>Password</label>
-        <input name="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <input name="password" type="password" autocomplete="current-password" />
 
         <button type="submit">Login</button>
       </form>
-
-      <div class="muted">Tip: Change ADMIN_USER/ADMIN_PASS in .env later.</div>
     </div>
   </div>
 </body>

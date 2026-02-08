@@ -1,6 +1,7 @@
 ﻿require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const session = require("express-session");
 const path = require("path");
 const db = require("./db");
 const { handleIncomingMessage } = require("./logic");
@@ -10,23 +11,50 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/**
- * Simple admin key protection
- * Use: /admin/settings?key=12345
- */
-app.use("/admin", (req, res, next) => {
-  const key = req.query.key;
-  if (process.env.ADMIN_KEY && key !== process.env.ADMIN_KEY) {
-    return res.status(401).send("Unauthorized. Add ?key=YOURKEY");
-  }
-  next();
-});
+app.use(session({
+  secret: process.env.SESSION_SECRET || "change_me",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, sameSite: "lax" }
+}));
 
 // EJS view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
 
 app.get("/", (req, res) => res.send("Order Management System ✅ Running"));
+
+/**
+ * -------------------------
+ * LOGIN + ADMIN AUTH
+ * -------------------------
+ */
+app.get("/login", (req, res) => {
+  res.render("admin/login", { error: null });
+});
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const okUser = (process.env.ADMIN_USER || "admin").trim();
+  const okPass = (process.env.ADMIN_PASS || "admin123").trim();
+
+  if (username === okUser && password === okPass) {
+    req.session.isAdmin = true;
+    return res.redirect("/admin/orders?status=DRAFT");
+  }
+
+  return res.status(401).render("admin/login", { error: "Invalid username or password" });
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => res.redirect("/login"));
+});
+
+app.use("/admin", (req, res, next) => {
+  if (req.session && req.session.isAdmin) return next();
+  return res.redirect("/login");
+});
 
 /**
  * -------------------------
@@ -238,6 +266,10 @@ app.post("/webhook", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port", PORT));
+
+
+
+
 
 
 
