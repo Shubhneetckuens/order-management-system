@@ -1,42 +1,55 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-  <title>Settings</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: Arial; padding: 16px; max-width: 600px; margin: auto; }
-    input { width: 100%; padding: 10px; margin: 6px 0; }
-    button { padding: 12px; width: 100%; font-size: 16px; }
-    a { display:inline-block; margin: 8px 0; }
-  </style>
-</head>
-<body>
-  <h2>⚙️ Settings</h2>
+﻿<%- include("partials/header", { title: "Settings", subtitle: "Price / UPI / Delivery rules", key, active: "settings" }) %>
 
-  <a href="/admin/orders?status=DRAFT&key=<%= key %>">📦 View Orders</a>
+<div class="grid">
+  <div class="card">
+    <h2>Quick links</h2>
+    <div class="chips">
+      <span class="chip ok">Live Admin</span>
+      <span class="chip">Use bottom tabs</span>
+      <span class="chip warn">Keep key safe</span>
+    </div>
+  </div>
 
-  <form method="POST" action="/admin/settings?key=<%= key %>">
-    <label>Product Name</label>
-    <input name="product_name" value="<%= settings.product_name %>" />
+  <div class="card">
+    <h2>Business Settings</h2>
 
-    <label>Unit Label</label>
-    <input name="unit_label" value="<%= settings.unit_label %>" />
+    <form method="POST" action="/admin/settings?key=<%= key %>">
+      <div class="row row-2">
+        <div>
+          <label>Product Name</label>
+          <input name="product_name" value="<%= settings.product_name %>" />
+        </div>
+        <div>
+          <label>Unit Label</label>
+          <input name="unit_label" value="<%= settings.unit_label %>" />
+        </div>
+      </div>
 
-    <label>Today Price Per Unit</label>
-    <input name="today_price_per_unit" value="<%= settings.today_price_per_unit %>" />
+      <div class="row row-2">
+        <div>
+          <label>Today Price (per unit)</label>
+          <input name="today_price_per_unit" value="<%= settings.today_price_per_unit %>" />
+        </div>
+        <div>
+          <label>Free Delivery Above</label>
+          <input name="free_delivery_threshold" value="<%= settings.free_delivery_threshold %>" />
+        </div>
+      </div>
 
-    <label>Free Delivery Threshold</label>
-    <input name="free_delivery_threshold" value="<%= settings.free_delivery_threshold %>" />
+      <div class="row row-2">
+        <div>
+          <label>Delivery Charge Amount</label>
+          <input name="delivery_charge_amount" value="<%= settings.delivery_charge_amount %>" />
+        </div>
+        <div>
+          <label>UPI ID</label>
+          <input name="upi_id" value="<%= settings.upi_id %>" />
+        </div>
+      </div>
 
-    <label>Delivery Charge Amount</label>
-    <input name="delivery_charge_amount" value="<%= settings.delivery_charge_amount %>" />
+      <button class="btn" type="submit">Save Settings</button>
+    </form>
+  </div>
+</div>
 
-    <label>UPI ID</label>
-    <input name="upi_id" value="<%= settings.upi_id %>" />
-
-    <button type="submit">Save Settings</button>
-  </form>
-</body>
-</html>
-
-
+<%- include("partials/footer", { key, active: "settings" }) %>

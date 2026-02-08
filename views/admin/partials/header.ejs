@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title><%= title %></title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1a30; --card2:#101f3a;
+      --txt:#e8eefc; --muted:#a7b4d6; --line:rgba(255,255,255,.10);
+      --brand:#5eead4; --brand2:#60a5fa; --danger:#fb7185; --warn:#fbbf24;
+      --shadow: 0 10px 24px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1000px 600px at 20% -10%, rgba(96,165,250,.25), transparent 55%),
+                  radial-gradient(900px 700px at 110% 0%, rgba(94,234,212,.18), transparent 55%),
+                  var(--bg);
+      color:var(--txt);
+    }
+    .wrap{max-width:980px; margin:0 auto; padding:16px 16px 92px;}
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(11,18,32,.72);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner{
+      max-width:980px; margin:0 auto; padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{display:flex; flex-direction:column; line-height:1.1}
+    .brand b{font-size:16px}
+    .brand small{color:var(--muted); font-size:12px}
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border:1px solid var(--line); border-radius:999px;
+      background: rgba(255,255,255,.04); color:var(--muted); font-size:12px;
+      user-select:none;
+    }
+    .grid{display:grid; gap:12px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .card h2{margin:0 0 10px; font-size:16px}
+    .row{display:grid; gap:10px}
+    @media(min-width:720px){ .row-2{grid-template-columns:1fr 1fr} }
+    label{display:block; color:var(--muted); font-size:12px; margin-bottom:6px}
+    input, select, textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(10,16,30,.55);
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{resize:vertical}
+    .btn{
+      width:100%;
+      padding:12px 14px;
+      border:0;
+      border-radius:14px;
+      color:#07111f;
+      font-weight:700;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      cursor:pointer;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+      color:var(--txt);
+      border: 1px solid var(--line);
+      font-weight:600;
+    }
+    .btn.danger{
+      background: rgba(251,113,133,.15);
+      border:1px solid rgba(251,113,133,.35);
+      color:#ffd7de;
+      font-weight:700;
+    }
+    .btn.warn{
+      background: rgba(251,191,36,.14);
+      border:1px solid rgba(251,191,36,.35);
+      color:#ffe7ad;
+      font-weight:700;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      padding:7px 10px; border-radius:999px; font-size:12px;
+      border:1px solid var(--line); background: rgba(255,255,255,.04); color:var(--muted);
+    }
+    .chip.ok{border-color: rgba(94,234,212,.35); color:#bdf7ee; background: rgba(94,234,212,.10)}
+    .chip.bad{border-color: rgba(251,113,133,.35); color:#ffd7de; background: rgba(251,113,133,.10)}
+    .chip.warn{border-color: rgba(251,191,36,.35); color:#ffe7ad; background: rgba(251,191,36,.10)}
+    .list{display:grid; gap:10px}
+    .order{
+      display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+      padding:12px; border-radius:14px; border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      text-decoration:none; color:inherit;
+    }
+    .order strong{font-size:14px}
+    .order small{color:var(--muted)}
+    .money{font-weight:800}
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0; z-index:20;
+      background: rgba(11,18,32,.85);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+    }
+    .bottom-inner{
+      max-width:980px; margin:0 auto;
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    }
+    .tab{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:6px;
+      padding:10px 8px;
+      border-radius:14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      text-decoration:none;
+      color: var(--muted);
+      font-size:12px;
+      user-select:none;
+    }
+    .tab b{font-size:12px; color:inherit}
+    .tab.active{
+      color:#091427;
+      border-color: rgba(96,165,250,.40);
+      background: linear-gradient(90deg, rgba(94,234,212,.95), rgba(96,165,250,.95));
+    }
+    .tab .dot{
+      width:8px; height:8px; border-radius:999px; background: rgba(255,255,255,.25);
+    }
+    .tab.active .dot{background: rgba(7,17,31,.6)}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <b>OMS Admin</b>
+        <small><%= subtitle || "Centralized orders" %></small>
+      </div>
+      <div class="pill">Key: <%= key ? "✅" : "❌" %></div>
+    </div>
+  </div>
+
+  <div class="wrap">

@@ -1,50 +1,35 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-  <title>Orders</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: Arial; padding: 16px; max-width: 900px; margin: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-    a { text-decoration: none; }
-    .tabs a { margin-right: 10px; }
-  </style>
-</head>
-<body>
-  <h2>📦 Orders (<%= status %>)</h2>
+﻿<%- include("partials/header", { title: "Orders", subtitle: "Tap an order to open", key, active: (status==='DRAFT'?'draft':(status==='APPROVED'?'approved':'draft')) }) %>
 
-  <div class="tabs">
-    <a href="/admin/orders?status=DRAFT&key=<%= key %>">DRAFT</a>
-    <a href="/admin/orders?status=APPROVED&key=<%= key %>">APPROVED</a>
-    <a href="/admin/orders?status=DELIVERED&key=<%= key %>">DELIVERED</a>
-    <a href="/admin/orders?status=REJECTED&key=<%= key %>">REJECTED</a>
-    <a href="/admin/settings?key=<%= key %>">⚙️ Settings</a>
+<div class="grid">
+  <div class="card">
+    <h2>Status filter</h2>
+    <div class="chips">
+      <a class="chip <%= status==='DRAFT' ? 'ok' : '' %>" href="/admin/orders?status=DRAFT&key=<%= key %>">DRAFT</a>
+      <a class="chip <%= status==='APPROVED' ? 'ok' : '' %>" href="/admin/orders?status=APPROVED&key=<%= key %>">APPROVED</a>
+      <a class="chip <%= status==='DELIVERED' ? 'ok' : '' %>" href="/admin/orders?status=DELIVERED&key=<%= key %>">DELIVERED</a>
+      <a class="chip <%= status==='REJECTED' ? 'ok' : '' %>" href="/admin/orders?status=REJECTED&key=<%= key %>">REJECTED</a>
+    </div>
   </div>
 
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Phone</th>
-      <th>Qty</th>
-      <th>Total</th>
-      <th>Delivery</th>
-      <th>Payment</th>
-      <th>Open</th>
-    </tr>
+  <div class="card">
+    <h2>Orders (<%= status %>)</h2>
 
-    <% orders.forEach(o => { %>
-      <tr>
-        <td><%= o.id %></td>
-        <td><%= o.phone %></td>
-        <td><%= o.qty %> <%= o.unit_label %></td>
-        <td>₹<%= o.total %></td>
-        <td><%= o.delivery_day %></td>
-        <td><%= o.payment_status %></td>
-        <td><a href="/admin/orders/<%= o.id %>?key=<%= key %>">Open</a></td>
-      </tr>
-    <% }) %>
-  </table>
-</body>
-</html>
+    <% if (!orders || orders.length === 0) { %>
+      <div class="chip">No orders in this status</div>
+    <% } %>
 
+    <div class="list">
+      <% (orders || []).forEach(o => { %>
+        <a class="order" href="/admin/orders/<%= o.id %>?key=<%= key %>">
+          <div>
+            <strong>#<%= o.id %> • <%= o.phone %></strong><br/>
+            <small><%= o.qty %> <%= o.unit_label %> • <%= o.delivery_day %> • <%= o.payment_status %></small>
+          </div>
+          <div class="money">₹<%= o.total %></div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<%- include("partials/footer", { key, active: (status==='APPROVED'?'approved':'draft') }) %>
