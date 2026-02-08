@@ -1,0 +1,23 @@
+﻿<%- include("partials/header", { title: "Profile", subtitle: "Admin account", active: "settings" }) %>
+
+<div class="grid">
+  <div class="card">
+    <h2>👤 Profile</h2>
+    <div class="chips">
+      <span class="chip ok">Logged in</span>
+      <span class="chip">Admin</span>
+    </div>
+    <p style="color:var(--muted); margin:10px 0 0;">
+      Later we can add change password here.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Logout</h2>
+    <form method="POST" action="/logout">
+      <button class="btn danger" type="submit">Logout</button>
+    </form>
+  </div>
+</div>
+
+<%- include("partials/footer", { active: "settings" }) %>

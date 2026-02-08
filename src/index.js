@@ -65,7 +65,7 @@ app.use("/admin", (req, res, next) => {
 // Settings page
 app.get("/admin/settings", async (req, res) => {
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
-  res.render("admin/settings", { settings, key: req.query.key, q: req.query });
+  res.render("admin/settings", { settings, q: req.query });
 });
 
 app.post("/admin/settings", async (req, res) => {
@@ -116,7 +116,7 @@ app.get("/admin/orders", async (req, res) => {
     )
   ).rows;
 
-  res.render("admin/orders", { orders, status, key: req.query.key, q: req.query });
+  res.render("admin/orders", { orders, status, q: req.query });
 });
 
 // Order detail
@@ -137,7 +137,7 @@ app.get("/admin/orders/:id", async (req, res) => {
 
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
 
-  res.render("admin/order_detail", { order, settings, key: req.query.key, q: req.query });
+  res.render("admin/order_detail", { order, settings, q: req.query });
 });
 
 // Update order fields
@@ -281,4 +281,14 @@ app.listen(PORT, () => console.log("Server running on port", PORT));
 
 
 
+
+
+
+
+
+
+// Profile page
+app.get('/admin/profile', (req, res) => {
+  res.render('admin/profile');
+});
 
