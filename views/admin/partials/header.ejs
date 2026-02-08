@@ -24,12 +24,13 @@
     .wrap{max-width:980px; margin:0 auto; padding:18px 16px 92px;} /* extra top spacing */
     .topbar{
       position:sticky; top:0; z-index:10;
+      padding-top: env(safe-area-inset-top);
       backdrop-filter: blur(10px);
       background: rgba(11,18,32,.72);
       border-bottom: 1px solid var(--line);
     }
     .topbar-inner{
-      max-width:980px; margin:0 auto; padding:16px 16px; /* extra spacing */
+      max-width:980px; margin:0 auto; padding:18px 16px; /* extra spacing */
       display:flex; align-items:center; justify-content:space-between; gap:12px;
     }
     .brand{display:flex; flex-direction:column; line-height:1.1}
@@ -218,3 +219,4 @@
         });
       })();
     </script>
+
