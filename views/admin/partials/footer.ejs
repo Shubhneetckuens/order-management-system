@@ -1,14 +1,10 @@
 ﻿  </div>
 
   <div class="bottom-nav">
-    <div class="bottom-inner">
-      <a class="tab <%= active === 'draft' ? 'active' : '' %>" href="/admin/orders?status=DRAFT&key=<%= key %>">
+    <div class="bottom-inner" style="grid-template-columns:repeat(2,1fr);">
+      <a class="tab <%= active === 'orders' ? 'active' : '' %>" href="/admin/orders?status=DRAFT&key=<%= key %>">
         <span class="dot"></span>
-        <b>Draft</b>
-      </a>
-      <a class="tab <%= active === 'approved' ? 'active' : '' %>" href="/admin/orders?status=APPROVED&key=<%= key %>">
-        <span class="dot"></span>
-        <b>Approved</b>
+        <b>Orders</b>
       </a>
       <a class="tab <%= active === 'settings' ? 'active' : '' %>" href="/admin/settings?key=<%= key %>">
         <span class="dot"></span>

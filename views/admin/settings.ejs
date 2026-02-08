@@ -1,15 +1,12 @@
 ﻿<%- include("partials/header", { title: "Settings", subtitle: "Price / UPI / Delivery rules", key, active: "settings" }) %>
 
-<div class="grid">
-  <div class="card">
-    <h2>Quick links</h2>
-    <div class="chips">
-      <span class="chip ok">Live Admin</span>
-      <span class="chip">Use bottom tabs</span>
-      <span class="chip warn">Keep key safe</span>
-    </div>
+<% if (q && q.saved === "1") { %>
+  <div class="card" style="border-color: rgba(94,234,212,.35); background: rgba(94,234,212,.10);">
+    ✅ Changes have been saved
   </div>
+<% } %>
 
+<div class="grid">
   <div class="card">
     <h2>Business Settings</h2>
 

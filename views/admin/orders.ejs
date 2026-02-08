@@ -1,4 +1,10 @@
-﻿<%- include("partials/header", { title: "Orders", subtitle: "Tap an order to open", key, active: (status==='DRAFT'?'draft':(status==='APPROVED'?'approved':'draft')) }) %>
+﻿<%- include("partials/header", { title: "Orders", subtitle: "Tap an order to open", key, active: "orders" }) %>
+
+<% if (q && q.toast) { %>
+  <div class="card" style="border-color: rgba(94,234,212,.35); background: rgba(94,234,212,.10);">
+    ✅ <%= q.toast %>
+  </div>
+<% } %>
 
 <div class="grid">
   <div class="card">
@@ -32,4 +38,4 @@
   </div>
 </div>
 
-<%- include("partials/footer", { key, active: (status==='APPROVED'?'approved':'draft') }) %>
+<%- include("partials/footer", { key, active: "orders" }) %>

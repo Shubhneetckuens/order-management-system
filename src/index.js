@@ -37,7 +37,7 @@ app.get("/", (req, res) => res.send("Order Management System ✅ Running"));
 // Settings page
 app.get("/admin/settings", async (req, res) => {
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
-  res.render("admin/settings", { settings, key: req.query.key });
+  res.render("admin/settings", { settings, key: req.query.key, q: req.query });
 });
 
 app.post("/admin/settings", async (req, res) => {
@@ -70,7 +70,7 @@ app.post("/admin/settings", async (req, res) => {
     ]
   );
 
-  res.redirect(`/admin/settings?key=${req.query.key || ""}`);
+  res.redirect(`/admin/settings?key=${req.query.key}&saved=1`);
 });
 
 // Orders list
@@ -88,7 +88,7 @@ app.get("/admin/orders", async (req, res) => {
     )
   ).rows;
 
-  res.render("admin/orders", { orders, status, key: req.query.key });
+  res.render("admin/orders", { orders, status, key: req.query.key, q: req.query });
 });
 
 // Order detail
@@ -109,7 +109,7 @@ app.get("/admin/orders/:id", async (req, res) => {
 
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
 
-  res.render("admin/order_detail", { order, settings, key: req.query.key });
+  res.render("admin/order_detail", { order, settings, key: req.query.key, q: req.query });
 });
 
 // Update order fields
@@ -151,23 +151,20 @@ app.post("/admin/orders/:id/update", async (req, res) => {
 app.post("/admin/orders/:id/approve", async (req, res) => {
   const id = req.params.id;
   await db.query("UPDATE orders SET status='APPROVED', updated_at=NOW() WHERE id=$1", [id]);
-  res.redirect(`/admin/orders/${id}?key=${req.query.key}`);
+  res.redirect(`/admin/orders?status=APPROVED&key=${req.query.key}&toast=Order approved`);
 });
-
 // Reject order
 app.post("/admin/orders/:id/reject", async (req, res) => {
   const id = req.params.id;
   await db.query("UPDATE orders SET status='REJECTED', updated_at=NOW() WHERE id=$1", [id]);
-  res.redirect(`/admin/orders/${id}?key=${req.query.key}`);
+  res.redirect(`/admin/orders?status=REJECTED&key=${req.query.key}&toast=Order rejected`);
 });
-
 // Delivered
 app.post("/admin/orders/:id/delivered", async (req, res) => {
   const id = req.params.id;
   await db.query("UPDATE orders SET status='DELIVERED', updated_at=NOW() WHERE id=$1", [id]);
-  res.redirect(`/admin/orders/${id}?key=${req.query.key}`);
+  res.redirect(`/admin/orders?status=DELIVERED&key=${req.query.key}&toast=Marked delivered`);
 });
-
 // Manual payment mark paid/unpaid
 app.post("/admin/orders/:id/payment", async (req, res) => {
   const id = req.params.id;
@@ -241,6 +238,11 @@ app.post("/webhook", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port", PORT));
+
+
+
+
+
 
 
 
