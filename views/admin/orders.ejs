@@ -1,4 +1,4 @@
-﻿<%- include("partials/header", { title: "Orders", subtitle: "Tap an order to open", key, active: "orders" }) %>
+﻿<%- include("partials/header", { title: "Orders", subtitle: "Tap an order to open", active: "orders" }) %>
 
 <% if (q && q.toast) { %>
   <div class="card" style="border-color: rgba(94,234,212,.35); background: rgba(94,234,212,.10);">
@@ -10,10 +10,10 @@
   <div class="card">
     <h2>Status filter</h2>
     <div class="chips">
-      <a class="chip <%= status==='DRAFT' ? 'ok' : '' %>" href="/admin/orders?status=DRAFT&key=<%= key %>">DRAFT</a>
-      <a class="chip <%= status==='APPROVED' ? 'ok' : '' %>" href="/admin/orders?status=APPROVED&key=<%= key %>">APPROVED</a>
-      <a class="chip <%= status==='DELIVERED' ? 'ok' : '' %>" href="/admin/orders?status=DELIVERED&key=<%= key %>">DELIVERED</a>
-      <a class="chip <%= status==='REJECTED' ? 'ok' : '' %>" href="/admin/orders?status=REJECTED&key=<%= key %>">REJECTED</a>
+      <a class="chip <%= status==='DRAFT' ? 'ok' : '' %>" href="/admin/orders?status=DRAFT">DRAFT</a>
+      <a class="chip <%= status==='APPROVED' ? 'ok' : '' %>" href="/admin/orders?status=APPROVED">APPROVED</a>
+      <a class="chip <%= status==='DELIVERED' ? 'ok' : '' %>" href="/admin/orders?status=DELIVERED">DELIVERED</a>
+      <a class="chip <%= status==='REJECTED' ? 'ok' : '' %>" href="/admin/orders?status=REJECTED">REJECTED</a>
     </div>
   </div>
 
@@ -26,7 +26,7 @@
 
     <div class="list">
       <% (orders || []).forEach(o => { %>
-        <a class="order" href="/admin/orders/<%= o.id %>?key=<%= key %>">
+        <a class="order" href="/admin/orders/<%= o.id %>">
           <div>
             <strong>#<%= o.id %> • <%= o.phone %></strong><br/>
             <small><%= o.qty %> <%= o.unit_label %> • <%= o.delivery_day %> • <%= o.payment_status %></small>
@@ -38,4 +38,6 @@
   </div>
 </div>
 
-<%- include("partials/footer", { key, active: "orders" }) %>
+<%- include("partials/footer", { active: "orders" }) %>
+
+

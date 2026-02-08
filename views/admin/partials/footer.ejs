@@ -1,15 +1,21 @@
 ﻿  </div>
 
   <div class="bottom-nav">
-    <div class="bottom-inner" style="grid-template-columns:repeat(2,1fr);">
-      <a class="tab <%= active === 'orders' ? 'active' : '' %>" href="/admin/orders?status=DRAFT&key=<%= key %>">
+    <div class="bottom-inner" style="grid-template-columns:repeat(3,1fr);">
+      <a class="tab <%= active === 'orders' ? 'active' : '' %>" href="/admin/orders?status=DRAFT">
         <span class="dot"></span>
         <b>Orders</b>
       </a>
-      <a class="tab <%= active === 'settings' ? 'active' : '' %>" href="/admin/settings?key=<%= key %>">
+      <a class="tab <%= active === 'settings' ? 'active' : '' %>" href="/admin/settings">
         <span class="dot"></span>
         <b>Settings</b>
       </a>
+      <form method="POST" action="/logout" style="margin:0;">
+        <button class="tab" type="submit" style="width:100%; cursor:pointer;">
+          <span class="dot"></span>
+          <b>Logout</b>
+        </button>
+      </form>
     </div>
   </div>
 </body>

@@ -1,4 +1,4 @@
-﻿<%- include("partials/header", { title: "Order Detail", subtitle: "Edit • Approve • Payment • Delivered", key, active: (order.status==='APPROVED'?'approved':'draft') }) %>
+﻿<%- include("partials/header", { title: "Order Detail", subtitle: "Edit • Approve • Payment • Delivered", active: (order.status==='APPROVED'?'approved':'draft') }) %>
 
 <div class="grid">
   <div class="card">
@@ -14,7 +14,7 @@
   <div class="card">
     <h2>Edit Order</h2>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/update?key=<%= key %>">
+    <form method="POST" action="/admin/orders/<%= order.id %>/update">
       <div class="row row-2">
         <div>
           <label>Qty</label>
@@ -51,15 +51,15 @@
     <h2>Actions</h2>
 
     <div class="row">
-      <form method="POST" action="/admin/orders/<%= order.id %>/approve?key=<%= key %>">
+      <form method="POST" action="/admin/orders/<%= order.id %>/approve">
         <button class="btn" type="submit">Approve</button>
       </form>
 
-      <form method="POST" action="/admin/orders/<%= order.id %>/delivered?key=<%= key %>">
+      <form method="POST" action="/admin/orders/<%= order.id %>/delivered">
         <button class="btn warn" type="submit">Mark Delivered</button>
       </form>
 
-      <form method="POST" action="/admin/orders/<%= order.id %>/reject?key=<%= key %>">
+      <form method="POST" action="/admin/orders/<%= order.id %>/reject">
         <button class="btn danger" type="submit">Reject</button>
       </form>
     </div>
@@ -68,7 +68,7 @@
   <div class="card">
     <h2>Manual Payment</h2>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/payment?key=<%= key %>">
+    <form method="POST" action="/admin/orders/<%= order.id %>/payment">
       <div class="row row-2">
         <div>
           <label>Status</label>
@@ -96,4 +96,6 @@
   </div>
 </div>
 
-<%- include("partials/footer", { key, active: (order.status==='APPROVED'?'approved':'draft') }) %>
+<%- include("partials/footer", { active: (order.status==='APPROVED'?'approved':'draft') }) %>
+
+
