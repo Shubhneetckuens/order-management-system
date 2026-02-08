@@ -21,7 +21,7 @@
                   var(--bg);
       color:var(--txt);
     }
-    .wrap{max-width:980px; margin:0 auto; padding:16px 16px 92px;}
+    .wrap{max-width:980px; margin:0 auto; padding:18px 16px 92px;} /* extra top spacing */
     .topbar{
       position:sticky; top:0; z-index:10;
       backdrop-filter: blur(10px);
@@ -29,18 +29,54 @@
       border-bottom: 1px solid var(--line);
     }
     .topbar-inner{
-      max-width:980px; margin:0 auto; padding:14px 16px;
+      max-width:980px; margin:0 auto; padding:16px 16px; /* extra spacing */
       display:flex; align-items:center; justify-content:space-between; gap:12px;
     }
     .brand{display:flex; flex-direction:column; line-height:1.1}
     .brand b{font-size:16px}
     .brand small{color:var(--muted); font-size:12px}
+
     .pill{
       display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px; border:1px solid var(--line); border-radius:999px;
+      padding:9px 12px; border:1px solid var(--line); border-radius:999px;
       background: rgba(255,255,255,.04); color:var(--muted); font-size:12px;
-      user-select:none;
+      user-select:none; cursor:pointer;
     }
+
+    .menuWrap{position:relative}
+    .menu{
+      position:absolute; right:0; top:44px;
+      width:190px;
+      border:1px solid var(--line);
+      background: rgba(11,18,32,.92);
+      backdrop-filter: blur(12px);
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      padding:8px;
+      display:none;
+    }
+    .menu.show{display:block}
+    .menu a, .menu button{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid transparent;
+      background: transparent;
+      color: var(--txt);
+      text-decoration:none;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .menu a:hover, .menu button:hover{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.10);
+    }
+    .menu .muted{color:var(--muted); font-size:12px; padding:8px 10px}
+
     .grid{display:grid; gap:12px}
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
@@ -96,6 +132,7 @@
     .chip{
       padding:7px 10px; border-radius:999px; font-size:12px;
       border:1px solid var(--line); background: rgba(255,255,255,.04); color:var(--muted);
+      text-decoration:none;
     }
     .chip.ok{border-color: rgba(94,234,212,.35); color:#bdf7ee; background: rgba(94,234,212,.10)}
     .chip.bad{border-color: rgba(251,113,133,.35); color:#ffd7de; background: rgba(251,113,133,.10)}
@@ -119,7 +156,7 @@
     }
     .bottom-inner{
       max-width:980px; margin:0 auto;
-      display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+      display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
     }
     .tab{
       display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -152,9 +189,32 @@
         <b>OMS Admin</b>
         <small><%= subtitle || "Centralized orders" %></small>
       </div>
-      <div class="pill">Admin Panel</div>
+
+      <div class="menuWrap">
+        <div class="pill" id="menuBtn">Admin Panel ▾</div>
+        <div class="menu" id="menuBox">
+          <div class="muted">Signed in</div>
+          <a href="/admin/profile">👤 Profile</a>
+          <form method="POST" action="/logout" style="margin:0;">
+            <button type="submit">🚪 Logout</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="wrap">
+    <script>
+      (function(){
+        const btn = document.getElementById("menuBtn");
+        const box = document.getElementById("menuBox");
+        if(!btn || !box) return;
 
+        btn.addEventListener("click", () => box.classList.toggle("show"));
+        document.addEventListener("click", (e) => {
+          if(!box.classList.contains("show")) return;
+          const inside = btn.contains(e.target) || box.contains(e.target);
+          if(!inside) box.classList.remove("show");
+        });
+      })();
+    </script>
