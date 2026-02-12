@@ -365,3 +365,40 @@ app.post('/admin/orders/:id/payment', async (req, res) => {
 });
 
 
+
+app.post("/admin/orders/:id/final", async (req, res) => {
+  const id = req.params.id;
+  const { qty, delivery_day, address_snapshot, price_per_unit } = req.body;
+
+  const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
+  const q = Math.max(0, parseFloat(qty || 0));
+
+  // allow override price, else use settings price
+  const p = price_per_unit && price_per_unit !== ""
+    ? Math.max(0, parseFloat(price_per_unit))
+    : Math.max(0, parseFloat(settings.today_price_per_unit));
+
+  const subtotal = q * p;
+
+  const freeThreshold = parseFloat(settings.free_delivery_threshold || 0);
+  const deliveryCharge = subtotal >= freeThreshold ? 0 : parseFloat(settings.delivery_charge_amount || 0);
+
+  const total = subtotal + deliveryCharge;
+
+  await db.query(
+    `UPDATE orders
+     SET qty=$1,
+         price_per_unit=$2,
+         subtotal=$3,
+         delivery_charge=$4,
+         total=$5,
+         delivery_day=$6,
+         address_snapshot=$7,
+         updated_at=NOW()
+     WHERE id=$8`,
+    [q, p, subtotal, deliveryCharge, total, (delivery_day || "TODAY"), (address_snapshot || ""), id]
+  );
+
+  res.redirect(`/admin/orders/${id}?toast=Final values saved`);
+});
+
