@@ -65,10 +65,25 @@ app.use("/admin", (req, res, next) => {
 // Settings page
 app.get("/admin/settings", async (req, res) => {
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
-  res.render("admin/settings", { settings, q: req.query });
-});
 
-app.post("/admin/settings", async (req, res) => {
+  const products = (await db.query("SELECT * FROM products ORDER BY name ASC")).rows;
+
+  const subs = (await db.query(
+    `SELECT sp.*, p.name AS product_name
+     FROM sub_products sp
+     JOIN products p ON p.id = sp.product_id
+     ORDER BY p.name ASC, sp.name ASC`
+  )).rows;
+
+  const subsByProduct = {};
+  for (const sp of subs) {
+    subsByProduct[sp.product_id] = subsByProduct[sp.product_id] || [];
+    subsByProduct[sp.product_id].push(sp);
+  }
+
+  const tab = (req.query.tab || "add").toLowerCase();
+  res.render("admin/settings", { settings, products, subsByProduct, tab, q: req.query });
+});app.post("/admin/settings", async (req, res) => {
   const {
     product_name,
     today_price_per_unit,
@@ -401,4 +416,132 @@ app.post("/admin/orders/:id/final", async (req, res) => {
 
   res.redirect(`/admin/orders/${id}?toast=Final values saved`);
 });
+
+
+
+
+/* -------------------------
+   PRODUCTS / SUB-PRODUCTS
+------------------------- */
+
+app.get("/admin/products", async (req, res) => {
+  const products = (await db.query("SELECT * FROM products ORDER BY id DESC")).rows;
+  res.render("admin/products", { products, q: req.query });
+});
+
+app.post("/admin/products", async (req, res) => {
+  const name = (req.body.name || "").trim();
+  if (!name) return res.redirect("/admin/products?toast=Enter product name");
+  await db.query("INSERT INTO products (name) VALUES ($1) ON CONFLICT (name) DO NOTHING", [name]);
+  res.redirect("/admin/products?toast=Product added");
+});
+
+app.post("/admin/products/:id/toggle", async (req, res) => {
+  const id = req.params.id;
+
+  const row = (await db.query("SELECT is_active FROM products WHERE id=$1", [id])).rows[0];
+  if (!row) return res.redirect("/admin/settings?tab=manage&toast=Product not found");
+
+  const newState = !row.is_active;
+
+  await db.query("UPDATE products SET is_active=$1 WHERE id=$2", [newState, id]);
+
+  // ✅ cascade: product ON/OFF => all sub-products ON/OFF
+  await db.query("UPDATE sub_products SET is_active=$1 WHERE product_id=$2", [newState, id]);
+
+  res.redirect(`/admin/settings?tab=manage&toast=Product and sub-products updated`);
+});
+app.get("/admin/sub-products", async (req, res) => {
+  const products = (await db.query("SELECT * FROM products ORDER BY name ASC")).rows;
+  const subs = (await db.query(
+    `SELECT sp.*, p.name AS product_name
+     FROM sub_products sp
+     JOIN products p ON p.id = sp.product_id
+     ORDER BY sp.id DESC`
+  )).rows;
+
+  res.render("admin/sub_products", { products, subs, q: req.query });
+});
+
+app.post("/admin/sub-products", async (req, res) => {
+  const product_id = parseInt(req.body.product_id, 10);
+  const name = (req.body.name || "").trim();
+  const price = parseFloat(req.body.price_per_unit || 0);
+  const unit = (req.body.unit_label || "KG").trim();
+
+  if (!product_id || !name) return res.redirect("/admin/sub-products?toast=Enter all fields");
+
+  await db.query(
+    `INSERT INTO sub_products (product_id, name, price_per_unit, unit_label)
+     VALUES ($1,$2,$3,$4)
+     ON CONFLICT (product_id, name)
+     DO UPDATE SET price_per_unit=EXCLUDED.price_per_unit, unit_label=EXCLUDED.unit_label`,
+    [product_id, name, price, unit]
+  );
+
+  res.redirect("/admin/sub-products?toast=Sub-product saved");
+});
+
+app.post("/admin/sub-products/:id/toggle", async (req, res) => {
+  const id = req.params.id;
+  await db.query("UPDATE sub_products SET is_active = NOT is_active WHERE id=$1", [id]);
+  res.redirect("/admin/sub-products?toast=Updated");
+});
+
+
+
+
+/* -------------------------
+   CREATE PRODUCT + MULTI SUB-PRODUCTS
+------------------------- */
+app.post("/admin/products/create-with-subs", async (req, res) => {
+  const productName = (req.body.product_name || "").trim();
+  if (!productName) return res.redirect("/admin/settings?tab=add&toast=Enter product name");
+
+  // Create product
+  const product = (await db.query(
+    `INSERT INTO products (name)
+     VALUES ($1)
+     ON CONFLICT (name) DO UPDATE SET name=EXCLUDED.name
+     RETURNING *`,
+    [productName]
+  )).rows[0];
+
+  // Normalize arrays
+  const names = Array.isArray(req.body.sub_name) ? req.body.sub_name : [req.body.sub_name];
+  const prices = Array.isArray(req.body.sub_price) ? req.body.sub_price : [req.body.sub_price];
+  const units = Array.isArray(req.body.sub_unit) ? req.body.sub_unit : [req.body.sub_unit];
+
+  let added = 0;
+
+  for (let i = 0; i < names.length; i++) {
+    const n = (names[i] || "").trim();
+    if (!n) continue;
+
+    const price = Math.max(0, parseFloat(prices[i] || 0));
+    const unit = (units[i] || "KG").trim() || "KG";
+
+    await db.query(
+      `INSERT INTO sub_products (product_id, name, price_per_unit, unit_label)
+       VALUES ($1,$2,$3,$4)
+       ON CONFLICT (product_id, name)
+       DO UPDATE SET price_per_unit=EXCLUDED.price_per_unit, unit_label=EXCLUDED.unit_label`,
+      [product.id, n, price, unit]
+    );
+
+    added++;
+  }
+
+  res.redirect(`/admin/settings?tab=manage&toast=Saved ${product.name} (${added} sub-products)`);
+});
+
+app.post("/admin/products/:id/rename", async (req, res) => {
+  const id = req.params.id;
+  const name = (req.body.name || "").trim();
+  if (!name) return res.redirect("/admin/settings?tab=manage&toast=Enter product name");
+  await db.query("UPDATE products SET name=$1 WHERE id=$2", [name, id]);
+  res.redirect("/admin/settings?tab=manage&toast=Product renamed");
+});
+
+
 
