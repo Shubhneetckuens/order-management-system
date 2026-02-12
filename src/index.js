@@ -169,9 +169,30 @@ app.get("/admin/orders/:id", async (req, res) => {
   if (!order) return res.status(404).send("Order not found");
 
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
-  res.render("admin/order_detail", { order, settings, q: req.query });
-});
-// Update order fields
+
+  const items = (await db.query(
+    `
+    SELECT oi.*, sp.name AS sub_name, sp.unit_label
+    FROM order_items oi
+    JOIN sub_products sp ON sp.id = oi.sub_product_id
+    WHERE oi.order_id=$1
+    ORDER BY oi.id DESC
+    `,
+    [id]
+  )).rows;
+
+  const subProducts = (await db.query(
+    `
+    SELECT sp.*, p.name AS product_name
+    FROM sub_products sp
+    JOIN products p ON p.id = sp.product_id
+    WHERE sp.is_active=TRUE AND p.is_active=TRUE
+    ORDER BY p.name ASC, sp.name ASC
+    `
+  )).rows;
+
+  res.render("admin/order_detail", { order, settings, items, subProducts, q: req.query });
+});// Update order fields
 app.post("/admin/orders/:id/update", async (req, res) => {
   const id = req.params.id;
 
@@ -543,5 +564,56 @@ app.post("/admin/products/:id/rename", async (req, res) => {
   res.redirect("/admin/settings?tab=manage&toast=Product renamed");
 });
 
+
+
+
+/* -------------------------
+   ORDER ITEMS
+------------------------- */
+
+// Add item to an order
+app.post("/admin/orders/:id/items/add", async (req, res) => {
+  const orderId = req.params.id;
+  const subId = parseInt(req.body.sub_product_id, 10);
+  const qty = Math.max(0, parseFloat(req.body.qty || 0));
+
+  if (!subId || qty <= 0) {
+    return res.redirect(`/admin/orders/${orderId}?toast=Select item and qty`);
+  }
+
+  const sp = (await db.query(
+    "SELECT * FROM sub_products WHERE id=$1",
+    [subId]
+  )).rows[0];
+
+  if (!sp) return res.redirect(`/admin/orders/${orderId}?toast=Invalid sub-product`);
+
+  const price = parseFloat(sp.price_per_unit || 0);
+  const subtotal = qty * price;
+
+  await db.query(
+    `INSERT INTO order_items (order_id, sub_product_id, qty, price_per_unit, subtotal)
+     VALUES ($1,$2,$3,$4,$5)`,
+    [orderId, subId, qty, price, subtotal]
+  );
+
+  await recalcOrderTotals(orderId);
+
+  res.redirect(`/admin/orders/${orderId}?toast=Item added`);
+});
+
+// Remove item
+app.post("/admin/orders/:orderId/items/:itemId/delete", async (req, res) => {
+  const { orderId, itemId } = req.params;
+
+  await db.query(
+    "DELETE FROM order_items WHERE id=$1 AND order_id=$2",
+    [itemId, orderId]
+  );
+
+  await recalcOrderTotals(orderId);
+
+  res.redirect(`/admin/orders/${orderId}?toast=Item removed`);
+});
 
 
