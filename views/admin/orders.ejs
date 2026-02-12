@@ -1,4 +1,4 @@
-﻿<%- include("partials/header", { title: "Orders", subtitle: "Tap an order to open", active: "orders" }) %>
+﻿<%- include("partials/header", { title: "Orders", subtitle: "Queue • Active • Closed", active: "orders" }) %>
 
 <% if (q && q.toast) { %>
   <div class="card" style="border-color: rgba(94,234,212,.35); background: rgba(94,234,212,.10);">
@@ -6,38 +6,83 @@
   </div>
 <% } %>
 
-<div class="grid">
-  <div class="card">
-    <h2>Status filter</h2>
-    <div class="chips">
-      <a class="chip <%= status==='DRAFT' ? 'ok' : '' %>" href="/admin/orders?status=DRAFT">DRAFT</a>
-      <a class="chip <%= status==='APPROVED' ? 'ok' : '' %>" href="/admin/orders?status=APPROVED">APPROVED</a>
-      <a class="chip <%= status==='DELIVERED' ? 'ok' : '' %>" href="/admin/orders?status=DELIVERED">DELIVERED</a>
-      <a class="chip <%= status==='REJECTED' ? 'ok' : '' %>" href="/admin/orders?status=REJECTED">REJECTED</a>
-    </div>
+<div class="card">
+  <h2>Order Buckets</h2>
+  <div class="chips">
+    <a class="chip <%= tab==='QUEUE' ? 'ok' : '' %>" href="/admin/orders?tab=QUEUE">Queue</a>
+    <a class="chip <%= tab==='ACTIVE' ? 'ok' : '' %>" href="/admin/orders?tab=ACTIVE">Active Orders</a>
+    <a class="chip <%= tab==='CLOSED' ? 'ok' : '' %>" href="/admin/orders?tab=CLOSED">Closed</a>
+    <a class="chip <%= tab==='REJECTED' ? 'bad' : '' %>" href="/admin/orders?tab=REJECTED">Rejected</a>
   </div>
 
-  <div class="card">
-    <h2>Orders (<%= status %>)</h2>
-
-    <% if (!orders || orders.length === 0) { %>
-      <div class="chip">No orders in this status</div>
-    <% } %>
-
-    <div class="list">
-      <% (orders || []).forEach(o => { %>
-        <a class="order" href="/admin/orders/<%= o.id %>">
-          <div>
-            <strong>#<%= o.id %> • <%= o.phone %></strong><br/>
-            <small><%= o.qty %> <%= o.unit_label %> • <%= o.delivery_day %> • <%= o.payment_status %></small>
-          </div>
-          <div class="money">₹<%= o.total %></div>
-        </a>
-      <% }) %>
+  <% if (tab==='ACTIVE') { %>
+    <div style="height:10px"></div>
+    <div class="chips">
+      <a class="chip <%= !q.fs ? 'ok' : '' %>" href="/admin/orders?tab=ACTIVE">All</a>
+      <a class="chip <%= q.fs==='CONFIRMED' ? 'ok' : '' %>" href="/admin/orders?tab=ACTIVE&fs=CONFIRMED">Confirmed</a>
+      <a class="chip <%= q.fs==='DISPATCHED' ? 'ok' : '' %>" href="/admin/orders?tab=ACTIVE&fs=DISPATCHED">Dispatched</a>
+      <a class="chip <%= q.fs==='DELIVERED' ? 'ok' : '' %>" href="/admin/orders?tab=ACTIVE&fs=DELIVERED">Delivered</a>
     </div>
+  <% } %>
+</div>
+
+<div class="grid">
+  <% if (!orders || orders.length === 0) { %>
+    <div class="card">
+      <h2>No orders</h2>
+      <div class="chip">Nothing in this bucket</div>
+    </div>
+  <% } %>
+
+  <div class="list">
+    <% (orders || []).forEach(o => { 
+      const pay = o.payment_status || "UNPAID";
+      const os = o.order_status || "QUEUE";
+      const fs = o.fulfillment_status || "CONFIRMED";
+    %>
+
+      <a class="order" href="/admin/orders/<%= o.id %>">
+        <div style="display:grid; gap:8px; width:100%;">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+            <div>
+              <strong><%= o.customer_name || "Customer" %></strong>
+              <small style="display:block;"><%= o.phone %></small>
+            </div>
+            <div style="text-align:right;">
+              <div class="money">₹<%= o.total %></div>
+              <small style="display:block;color:var(--muted);">#<%= o.id %></small>
+            </div>
+          </div>
+
+          <div class="chips">
+            <span class="chip <%= pay==='PAID' ? 'ok' : 'warn' %>">Payment: <%= pay %></span>
+
+            <% if (os === "QUEUE") { %>
+              <span class="chip">Pending Approval</span>
+            <% } %>
+
+            <% if (os === "ACTIVE") { %>
+              <span class="chip ok">Status: <%= fs %></span>
+            <% } %>
+
+            <% if (os === "CLOSED") { %>
+              <span class="chip ok">CLOSED</span>
+            <% } %>
+
+            <% if (os === "REJECTED") { %>
+              <span class="chip bad">REJECTED</span>
+            <% } %>
+          </div>
+
+          <div style="color:var(--muted); font-size:13px;">
+            Qty: <b style="color:var(--txt)"><%= o.qty %> <%= o.unit_label %></b>
+            • Delivery: <b style="color:var(--txt)"><%= o.delivery_day %></b>
+          </div>
+        </div>
+      </a>
+
+    <% }) %>
   </div>
 </div>
 
 <%- include("partials/footer", { active: "orders" }) %>
-
-

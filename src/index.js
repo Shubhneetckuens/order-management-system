@@ -103,43 +103,59 @@ app.post("/admin/settings", async (req, res) => {
 
 // Orders list
 app.get("/admin/orders", async (req, res) => {
-  const status = req.query.status || "DRAFT";
+  const tab = (req.query.tab || "QUEUE").toUpperCase();
+  const fsFilter = (req.query.fs || "").toUpperCase();
 
-  const orders = (
-    await db.query(
-      `SELECT o.*, c.phone
-       FROM orders o
-       JOIN customers c ON c.id=o.customer_id
-       WHERE o.status=$1
-       ORDER BY o.created_at DESC`,
-      [status]
-    )
-  ).rows;
+  const allowed = ["QUEUE", "ACTIVE", "CLOSED", "REJECTED"];
+  const safeTab = allowed.includes(tab) ? tab : "QUEUE";
 
-  res.render("admin/orders", { orders, status, q: req.query });
-});
+  const params = [safeTab];
+  let extraWhere = "";
 
-// Order detail
+  if (safeTab === "ACTIVE" && ["CONFIRMED","DISPATCHED","DELIVERED"].includes(fsFilter)) {
+    params.push(fsFilter);
+    extraWhere = " AND o.fulfillment_status = $2 ";
+  }
+
+  const orders = (await db.query(
+    `
+    SELECT
+      o.*,
+      c.phone,
+      c.name AS customer_name
+    FROM orders o
+    JOIN customers c ON c.id = o.customer_id
+    WHERE o.order_status = $1
+    ${extraWhere}
+    ORDER BY o.created_at DESC
+    LIMIT 200
+    `,
+    params
+  )).rows;
+
+  res.render("admin/orders", { orders, tab: safeTab, q: req.query });
+});// Order detail
 app.get("/admin/orders/:id", async (req, res) => {
   const id = req.params.id;
 
-  const order = (
-    await db.query(
-      `SELECT o.*, c.phone, c.address_text
-       FROM orders o
-       JOIN customers c ON c.id=o.customer_id
-       WHERE o.id=$1`,
-      [id]
-    )
-  ).rows[0];
+  const order = (await db.query(
+    `
+    SELECT
+      o.*,
+      c.phone,
+      c.name AS customer_name
+    FROM orders o
+    JOIN customers c ON c.id = o.customer_id
+    WHERE o.id=$1
+    `,
+    [id]
+  )).rows[0];
 
   if (!order) return res.status(404).send("Order not found");
 
   const settings = (await db.query("SELECT * FROM settings WHERE id=1")).rows[0];
-
   res.render("admin/order_detail", { order, settings, q: req.query });
 });
-
 // Update order fields
 app.post("/admin/orders/:id/update", async (req, res) => {
   const id = req.params.id;
@@ -178,16 +194,33 @@ app.post("/admin/orders/:id/update", async (req, res) => {
 // Approve order
 app.post("/admin/orders/:id/approve", async (req, res) => {
   const id = req.params.id;
-  await db.query("UPDATE orders SET status='APPROVED', updated_at=NOW() WHERE id=$1", [id]);
-  res.redirect(`/admin/orders?status=APPROVED&key=${req.query.key}&toast=Order approved`);
-});
-// Reject order
+
+  await db.query(
+    `UPDATE orders
+     SET order_status='ACTIVE',
+         fulfillment_status='CONFIRMED',
+         status='APPROVED',
+         updated_at=NOW()
+     WHERE id=$1`,
+    [id]
+  );
+
+  res.redirect(`/admin/orders?tab=ACTIVE&toast=Order moved to Active Orders`);
+});// Reject order
 app.post("/admin/orders/:id/reject", async (req, res) => {
   const id = req.params.id;
-  await db.query("UPDATE orders SET status='REJECTED', updated_at=NOW() WHERE id=$1", [id]);
-  res.redirect(`/admin/orders?status=REJECTED&key=${req.query.key}&toast=Order rejected`);
-});
-// Delivered
+
+  await db.query(
+    `UPDATE orders
+     SET order_status='REJECTED',
+         status='REJECTED',
+         updated_at=NOW()
+     WHERE id=$1`,
+    [id]
+  );
+
+  res.redirect(`/admin/orders?tab=REJECTED&toast=Order rejected`);
+});// Delivered
 app.post("/admin/orders/:id/delivered", async (req, res) => {
   const id = req.params.id;
   await db.query("UPDATE orders SET status='DELIVERED', updated_at=NOW() WHERE id=$1", [id]);
@@ -291,4 +324,44 @@ app.listen(PORT, () => console.log("Server running on port", PORT));
 app.get('/admin/profile', (req, res) => {
   res.render('admin/profile');
 });
+
+
+
+
+app.post('/admin/orders/:id/dispatch', async (req, res) => {
+  const id = req.params.id;
+  await db.query(
+    "UPDATE orders SET fulfillment_status='DISPATCHED', updated_at=NOW() WHERE id=$1",
+    [id]
+  );
+  res.redirect("/admin/orders?tab=ACTIVE&toast=Marked dispatched");
+});
+app.post('/admin/orders/:id/mark-delivered', async (req, res) => {
+  const id = req.params.id;
+  await db.query(
+    "UPDATE orders SET fulfillment_status='DELIVERED', updated_at=NOW() WHERE id=$1",
+    [id]
+  );
+  res.redirect("/admin/orders?tab=ACTIVE&toast=Marked delivered");
+});
+app.post('/admin/orders/:id/close', async (req, res) => {
+  const id = req.params.id;
+  await db.query(
+    "UPDATE orders SET order_status='CLOSED', status='DELIVERED', updated_at=NOW() WHERE id=$1",
+    [id]
+  );
+  res.redirect("/admin/orders?tab=CLOSED&toast=Order closed");
+});
+app.post('/admin/orders/:id/payment', async (req, res) => {
+  const id = req.params.id;
+  const { payment_status, payment_method, payment_note } = req.body;
+
+  await db.query(
+    "UPDATE orders SET payment_status=$1, payment_method=$2, payment_note=$3, updated_at=NOW() WHERE id=$4",
+    [payment_status || "UNPAID", payment_method || null, payment_note || null, id]
+  );
+
+  res.redirect(`/admin/orders/${id}?toast=Payment updated`);
+});
+
 
