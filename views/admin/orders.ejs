@@ -75,7 +75,7 @@
           </div>
 
           <div style="color:var(--muted); font-size:13px;">
-            Qty: <b style="color:var(--txt)"><%= o.qty %> <%= o.unit_label %></b>
+            Items: <b style="color:var(--txt)"><%= o.items_count %></b> • Qty: <b style="color:var(--txt)"><%= Number(o.items_qty || 0) %> <%= o.unit_label %></b>
             • Delivery: <b style="color:var(--txt)"><%= o.delivery_day %></b>
           </div>
         </div>
@@ -86,3 +86,7 @@
 </div>
 
 <%- include("partials/footer", { active: "orders" }) %>
+
+
+
+

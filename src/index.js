@@ -137,11 +137,23 @@ app.get("/admin/orders", async (req, res) => {
     SELECT
       o.*,
       c.phone,
-      c.name AS customer_name
+      c.name AS customer_name,
+      COALESCE(SUM(oi.qty),0) AS items_qty,
+      COUNT(oi.id) AS items_count,
+      COALESCE(o.items_total, o.total, 0) AS final_total,
+      (
+        SELECT string_agg(sp.name, ', ' ORDER BY oi2.id DESC)
+        FROM order_items oi2
+        JOIN sub_products sp ON sp.id = oi2.sub_product_id
+        WHERE oi2.order_id = o.id
+        LIMIT 2
+      ) AS preview_items
     FROM orders o
     JOIN customers c ON c.id = o.customer_id
+    LEFT JOIN order_items oi ON oi.order_id = o.id
     WHERE o.order_status = $1
     ${extraWhere}
+    GROUP BY o.id, c.phone, c.name
     ORDER BY o.created_at DESC
     LIMIT 200
     `,
@@ -614,6 +626,35 @@ app.post("/admin/orders/:orderId/items/:itemId/delete", async (req, res) => {
   await recalcOrderTotals(orderId);
 
   res.redirect(`/admin/orders/${orderId}?toast=Item removed`);
+});
+
+
+
+
+
+/* -------------------------
+   UPDATE FINAL ORDER DETAILS
+------------------------- */
+app.post("/admin/orders/:id/update-final", async (req, res) => {
+  const id = req.params.id;
+  const { address_snapshot, delivery_day } = req.body;
+
+  await db.query(
+    `
+    UPDATE orders
+    SET address_snapshot = $1,
+        delivery_day = $2,
+        updated_at = NOW()
+    WHERE id = $3
+    `,
+    [
+      address_snapshot || "",
+      delivery_day || "TODAY",
+      id
+    ]
+  );
+
+  res.redirect(`/admin/orders/${id}?toast=Final details updated`);
 });
 
 
