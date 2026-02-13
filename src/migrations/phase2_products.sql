@@ -1,0 +1,35 @@
+-- PRODUCTS
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- SUB PRODUCTS (variants)
+CREATE TABLE IF NOT EXISTS sub_products (
+  id SERIAL PRIMARY KEY,
+  product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  price_per_unit NUMERIC NOT NULL DEFAULT 0,
+  unit_label TEXT NOT NULL DEFAULT 'KG',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  UNIQUE(product_id, name)
+);
+
+-- ORDER ITEMS
+CREATE TABLE IF NOT EXISTS order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  sub_product_id INT NOT NULL REFERENCES sub_products(id),
+  qty NUMERIC NOT NULL DEFAULT 0,
+  price_per_unit NUMERIC NOT NULL DEFAULT 0,
+  subtotal NUMERIC NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Optional fields on orders for item-based totals
+ALTER TABLE orders
+ADD COLUMN IF NOT EXISTS items_subtotal NUMERIC NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS items_total NUMERIC NOT NULL DEFAULT 0;

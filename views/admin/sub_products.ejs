@@ -1,0 +1,64 @@
+﻿<%- include("partials/header", { title: "Sub-Products", subtitle: "Manage variants + pricing", active: "settings" }) %>
+
+<% if (q && q.toast) { %>
+  <div class="card" style="border-color: rgba(94,234,212,.35); background: rgba(94,234,212,.10);">
+    ✅ <%= q.toast %>
+  </div>
+<% } %>
+
+<div class="card">
+  <h2>Add / Update Sub-Product</h2>
+  <form method="POST" action="/admin/sub-products">
+    <label>Product</label>
+    <select name="product_id">
+      <% (products || []).forEach(p => { %>
+        <option value="<%= p.id %>"><%= p.name %></option>
+      <% }) %>
+    </select>
+
+    <label style="margin-top:10px;">Sub-Product Name</label>
+    <input name="name" placeholder="e.g. Button Mushroom" />
+
+    <div class="row row-2" style="margin-top:10px;">
+      <div>
+        <label>Price per Unit</label>
+        <input name="price_per_unit" placeholder="e.g. 200" />
+      </div>
+      <div>
+        <label>Unit</label>
+        <input name="unit_label" value="KG" />
+      </div>
+    </div>
+
+    <div style="height:10px"></div>
+    <button class="btn secondary" type="submit">💾 Save</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>All Sub-Products</h2>
+  <div class="list">
+    <% (subs || []).forEach(sp => { %>
+      <div class="order" style="cursor:default;">
+        <div style="display:grid; gap:6px; width:100%;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <strong><%= sp.name %></strong>
+              <small style="display:block;"><%= sp.product_name %></small>
+              <small style="display:block;">₹<%= sp.price_per_unit %> / <%= sp.unit_label %></small>
+            </div>
+            <span class="chip <%= sp.is_active ? 'ok' : 'bad' %>"><%= sp.is_active ? 'ACTIVE' : 'INACTIVE' %></span>
+          </div>
+
+          <form method="POST" action="/admin/sub-products/<%= sp.id %>/toggle" style="margin:0;">
+            <button class="btn <%= sp.is_active ? 'danger' : 'secondary' %>" type="submit">
+              <%= sp.is_active ? 'Disable' : 'Enable' %>
+            </button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include("partials/footer", { active: "settings" }) %>

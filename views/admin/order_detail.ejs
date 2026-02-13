@@ -1,4 +1,4 @@
-﻿<%- include("partials/header", { title: "Order Detail", subtitle: "Items • Total • Actions", active: "orders" }) %>
+﻿<%- include("partials/header", { title: "Order Detail", subtitle: "Inferred • Final • Items", active: "orders" }) %>
 
 <%
   const pay = order.payment_status || "UNPAID";
@@ -14,6 +14,7 @@
 
 <div class="grid">
 
+  <!-- CUSTOMER -->
   <div class="card">
     <h2>Customer</h2>
     <div class="chips">
@@ -24,10 +25,62 @@
 
     <div style="margin-top:10px; color:var(--muted); font-size:13px;">
       Bucket: <b style="color:var(--txt)"><%= os %></b>
-      <% if (os === "ACTIVE") { %> • Status: <b style="color:var(--txt)"><%= fs %></b> <% } %>
+      <% if (os === "ACTIVE") { %>
+        • Status: <b style="color:var(--txt)"><%= fs %></b>
+      <% } %>
     </div>
   </div>
 
+  <!-- INFERRED -->
+  <% if (os === "QUEUE") { %>
+    <div class="card">
+      <h2>🔎 Inferred (read-only)</h2>
+
+      <div class="chips">
+        <span class="chip">Qty: <b><%= Number(order.inferred_qty || 0) %> <%= order.unit_label %></b></span>
+        <span class="chip">Day: <b><%= (order.inferred_delivery_day || "TODAY") %></b></span>
+      </div>
+
+      <div style="margin-top:12px; display:grid; gap:6px;">
+        <div>Subtotal: <b>₹<%= Number(order.inferred_subtotal || 0) %></b></div>
+        <div>Delivery: <b>₹<%= Number(order.inferred_delivery_charge || 0) %></b></div>
+        <div style="font-size:18px;">Total: <b>₹<%= Number(order.inferred_total || 0) %></b></div>
+      </div>
+
+      <div style="margin-top:10px; color:var(--muted); font-size:13px;">
+        Address (inferred): <b style="color:var(--txt)"><%= (order.inferred_address_snapshot || "Not available") %></b>
+      </div>
+
+      <div style="margin-top:10px;" class="chip">
+        Final = items + address + delivery day below.
+      </div>
+    </div>
+  <% } %>
+
+  <!-- FINAL EDITABLE -->
+  <% if (os === "QUEUE") { %>
+    <div class="card">
+      <h2>✏ Final (Editable)</h2>
+
+      <form method="POST" action="/admin/orders/<%= order.id %>/update-final">
+        <label>Delivery Day</label>
+        <select name="delivery_day">
+          <option value="TODAY" <%= order.delivery_day==="TODAY"?"selected":"" %>>TODAY</option>
+          <option value="TOMORROW" <%= order.delivery_day==="TOMORROW"?"selected":"" %>>TOMORROW</option>
+        </select>
+
+        <div style="height:10px"></div>
+
+        <label>Delivery Address</label>
+        <textarea name="address_snapshot" rows="3"><%= order.address_snapshot %></textarea>
+
+        <div style="height:12px"></div>
+        <button class="btn secondary" type="submit">💾 Save Final Details</button>
+      </form>
+    </div>
+  <% } %>
+
+  <!-- ORDER ITEMS -->
   <div class="card">
     <h2>Order Items</h2>
 
@@ -42,11 +95,13 @@
             <div>
               <strong><%= it.sub_name %></strong>
               <small style="display:block; color:var(--muted);">
-                Qty: <b style="color:var(--txt)"><%= it.qty %></b> <%= it.unit_label %> • ₹<%= it.price_per_unit %> / <%= it.unit_label %>
+                Qty: <b style="color:var(--txt)"><%= Number(it.qty || 0) %></b> <%= it.unit_label %>
+                • ₹<%= Number(it.price_per_unit || 0) %> / <%= it.unit_label %>
               </small>
             </div>
             <div style="text-align:right;">
-              <div class="money">₹<%= it.subtotal %></div>
+              <div class="money">₹<%= Number(it.subtotal || 0) %></div>
+
               <form method="POST" action="/admin/orders/<%= order.id %>/items/<%= it.id %>/delete" style="margin-top:8px;">
                 <button class="btn danger" type="submit">Remove</button>
               </form>
@@ -56,7 +111,7 @@
       <% }) %>
     </div>
 
-    <div style="height:10px"></div>
+    <div style="height:12px"></div>
 
     <h3 style="margin:0 0 8px;">➕ Add Item</h3>
     <form method="POST" action="/admin/orders/<%= order.id %>/items/add">
@@ -79,25 +134,26 @@
     </form>
   </div>
 
+  <!-- TOTAL -->
   <div class="card">
     <h2>Total Summary</h2>
     <div style="display:grid; gap:8px;">
-      <div>Items Subtotal: <b>₹<%= order.items_subtotal || 0 %></b></div>
-      <div>Delivery: <b>₹<%= order.delivery_charge || 0 %></b></div>
-      <div style="font-size:18px;">Total: <b>₹<%= order.items_total || order.total || 0 %></b></div>
+      <div>Items Subtotal: <b>₹<%= Number(order.items_subtotal || 0) %></b></div>
+      <div>Delivery: <b>₹<%= Number(order.delivery_charge || 0) %></b></div>
+      <div style="font-size:18px;">Total: <b>₹<%= Number(order.items_total || order.total || 0) %></b></div>
     </div>
 
     <div style="margin-top:10px; color:var(--muted); font-size:13px;">
-      Address: <b style="color:var(--txt)"><%= order.address_snapshot %></b>
+      Final Address: <b style="color:var(--txt)"><%= order.address_snapshot %></b>
     </div>
   </div>
 
+  <!-- ACTIONS -->
   <% if (os === "QUEUE") { %>
     <div class="card">
       <h2>Actions (Queue)</h2>
-      <div class="chip">Approve will move to Active Orders with CONFIRMED status</div>
 
-      <form method="POST" action="/admin/orders/<%= order.id %>/approve" style="margin-top:10px;">
+      <form method="POST" action="/admin/orders/<%= order.id %>/approve">
         <button class="btn" type="submit">✅ Approve</button>
       </form>
 
@@ -127,35 +183,6 @@
 
       <form method="POST" action="/admin/orders/<%= order.id %>/close">
         <button class="btn" type="submit">🔒 Close Order</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2>Payment</h2>
-      <form method="POST" action="/admin/orders/<%= order.id %>/payment">
-        <div class="row row-2">
-          <div>
-            <label>Status</label>
-            <select name="payment_status">
-              <option value="UNPAID" <%= pay==='UNPAID'?'selected':'' %>>UNPAID</option>
-              <option value="PAID" <%= pay==='PAID'?'selected':'' %>>PAID</option>
-            </select>
-          </div>
-          <div>
-            <label>Method</label>
-            <select name="payment_method">
-              <option value="UPI">UPI</option>
-              <option value="CASH">CASH</option>
-              <option value="OTHER">OTHER</option>
-            </select>
-          </div>
-        </div>
-
-        <label style="margin-top:10px;">Note</label>
-        <textarea name="payment_note" rows="2"><%= order.payment_note || "" %></textarea>
-
-        <div style="height:10px"></div>
-        <button class="btn secondary" type="submit">💾 Save Payment</button>
       </form>
     </div>
   <% } %>
