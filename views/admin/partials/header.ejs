@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -139,7 +139,7 @@
     .chip.bad{border-color: rgba(251,113,133,.35); color:#ffd7de; background: rgba(251,113,133,.10)}
     .chip.warn{border-color: rgba(251,191,36,.35); color:#ffe7ad; background: rgba(251,191,36,.10)}
     .list{display:grid; gap:10px}
-    .order{
+.order{
       display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
       padding:12px; border-radius:14px; border:1px solid var(--line);
       background: rgba(255,255,255,.03);
@@ -181,7 +181,12 @@
       width:8px; height:8px; border-radius:999px; background: rgba(255,255,255,.25);
     }
     .tab.active .dot{background: rgba(7,17,31,.6)}
-  </style>
+  
+/* FIX: Android WebView <details class='order'> must expand below */
+details.order{ display:block !important; }
+details.order > summary{ display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; list-style:none; }
+details.order > summary::-webkit-details-marker{ display:none; }
+</style>
 </head>
 <body>
   <div class="topbar">
@@ -192,12 +197,12 @@
       </div>
 
       <div class="menuWrap">
-        <div class="pill" id="menuBtn">Admin Panel ▾</div>
+        <div class="pill" id="menuBtn">Admin Panel ?</div>
         <div class="menu" id="menuBox">
           <div class="muted">Signed in</div>
-          <a href="/admin/profile">👤 Profile</a>
+          <a href="/admin/profile">?? Profile</a>
           <form method="POST" action="/logout" style="margin:0;">
-            <button type="submit">🚪 Logout</button>
+            <button type="submit">?? Logout</button>
           </form>
         </div>
       </div>
@@ -219,5 +224,8 @@
         });
       })();
     </script>
+
+
+
 
 

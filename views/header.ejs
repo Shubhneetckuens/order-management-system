@@ -1,0 +1,37 @@
+
+
+<style>
+/* Fix <details class="order"> expansion in Android/WebView */
+details.order{
+  display: block !important;
+}
+
+details.order > summary{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.order > summary::-webkit-details-marker{
+  display: none;
+}
+
+/* Mobile/WebView: ensure <details class='order'> expands below */
+details.order{ display:block !important; }
+details.order > summary{ display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; list-style:none; }
+details.order > summary::-webkit-details-marker{ display:none; }
+
+/* Capacitor/WebView dropdown fix: force menus below */.dropdown-menu{ position:absolute !important; top:100% !important; left:0 !important; right:auto !important; transform:none !important; }.dropdown{ position:relative !important; }
+</style>
+
+
+
+
+details.order > summary::-webkit-details-marker{ display:none; }
+
+
+
+
