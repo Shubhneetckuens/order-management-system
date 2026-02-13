@@ -186,7 +186,39 @@
 details.order{ display:block !important; }
 details.order > summary{ display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; list-style:none; }
 details.order > summary::-webkit-details-marker{ display:none; }
-</style>
+
+/* ===== Mobile fix: expanded product section should not overflow ===== */
+@media (max-width: 520px){
+  /* prevent any expanded panel content from spilling out */
+  details.order, details.order *{
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* allow inner flex rows to wrap instead of pushing to right */
+  details.order .order,
+  details.order .row,
+  details.order .controls,
+  details.order .sub-products,
+  details.order .subproduct,
+  details.order .variant,
+  details.order .variant-row{
+    flex-wrap: wrap !important;
+  }
+
+  /* make form controls/buttons never overflow */
+  details.order input,
+  details.order select,
+  details.order textarea,
+  details.order button{
+    max-width: 100% !important;
+  }
+
+  /* stop bottom nav from hiding the last button (Update etc.) */
+  body{
+    padding-bottom: 110px !important;
+  }
+}</style>
 </head>
 <body>
   <div class="topbar">
@@ -224,6 +256,7 @@ details.order > summary::-webkit-details-marker{ display:none; }
         });
       })();
     </script>
+
 
 
 
