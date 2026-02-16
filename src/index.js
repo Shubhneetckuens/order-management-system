@@ -1,5 +1,9 @@
 ﻿require("dotenv").config();
 const express = require("express");
+
+
+
+const customerRoutes = require('./routes/customer.routes');
 const cors = require("cors");
 const session = require("express-session");
 const path = require("path");
@@ -7,6 +11,8 @@ const db = require("./db");
 const { handleIncomingMessage } = require("./logic");
 
 const app = express();
+
+app.use('/customer', express.static('public/customer'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -18,6 +24,16 @@ app.use(session({
   cookie: { httpOnly: true, sameSite: "lax" }
 }));
 
+
+
+
+
+app.get("/admin/lang", (req, res) => {
+  const l = String(req.query.l || "en");
+  req.session.lang = supported.includes(l) ? l : "en";
+  const back = req.get("Referer") || "/admin/settings";
+  res.redirect(back);
+});
 // EJS view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
@@ -82,7 +98,7 @@ app.get("/admin/settings", async (req, res) => {
   }
 
   const tab = (req.query.tab || "add").toLowerCase();
-  res.render("admin/settings", { settings, products, subsByProduct, tab, q: req.query });
+  res.render("admin/settings", {  settings, products, subsByProduct, tab, q: req.query });
 });app.post("/admin/settings", async (req, res) => {
   const {
     product_name,
@@ -656,5 +672,17 @@ app.post("/admin/orders/:id/update-final", async (req, res) => {
 
   res.redirect(`/admin/orders/${id}?toast=Final details updated`);
 });
+
+
+
+
+
+
+
+
+
+
+
+app.use('/c', customerRoutes);
 
 

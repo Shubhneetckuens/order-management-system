@@ -8,7 +8,12 @@
 
 <div class="card">
   <h2>Settings Menu</h2>
-  <div class="chips">
+<div style='margin:12px 0; display:flex; gap:10px; flex-wrap:wrap;'>
+  <a href='/admin/settings?tab=main' style='padding:8px 12px; border-radius:10px; background:#111827; color:#fff; text-decoration:none;'>Main</a>
+  
+</div>
+
+<div class="chips">
     <a class="chip <%= tab==='add' ? 'ok' : '' %>" href="/admin/settings?tab=add">Add Product</a>
     <a class="chip <%= tab==='manage' ? 'ok' : '' %>" href="/admin/settings?tab=manage">Manage Product</a>
     <a class="chip <%= tab==='delivery' ? 'ok' : '' %>" href="/admin/settings?tab=delivery">Delivery Master</a>
@@ -20,8 +25,12 @@
 
   <div class="card">
     <h2>➕ Add Product + Sub-Products</h2>
+<div style='margin:12px 0; display:flex; gap:10px; flex-wrap:wrap;'>
+  <a href='/admin/settings?tab=main' style='padding:8px 12px; border-radius:10px; background:#111827; color:#fff; text-decoration:none;'>Main</a>
+  
+</div>
 
-    <form method="POST" action="/admin/products/create-with-subs" id="addProductForm">
+<form method="POST" action="/admin/products/create-with-subs" id="addProductForm">
       <label>Product Name</label>
       <input name="product_name" placeholder="e.g. Mushrooms" />
 
@@ -92,7 +101,12 @@
 
   <div class="card">
     <h2>📦 Manage Products</h2>
-    <div class="chip">Tap a product to expand and edit</div>
+<div style='margin:12px 0; display:flex; gap:10px; flex-wrap:wrap;'>
+  <a href='/admin/settings?tab=main' style='padding:8px 12px; border-radius:10px; background:#111827; color:#fff; text-decoration:none;'>Main</a>
+  
+</div>
+
+<div class="chip">Tap a product to expand and edit</div>
 
     <% if (!products || products.length === 0) { %>
       <div style="margin-top:10px;" class="chip">No products yet. Go to Add Product.</div>
@@ -221,7 +235,12 @@
 <% if (tab === 'delivery') { %> { %> { %>
   <div class="card">
     <h2>🚚 Delivery Master</h2>
-    <form method="POST" action="/admin/settings">
+<div style='margin:12px 0; display:flex; gap:10px; flex-wrap:wrap;'>
+  <a href='/admin/settings?tab=main' style='padding:8px 12px; border-radius:10px; background:#111827; color:#fff; text-decoration:none;'>Main</a>
+  
+</div>
+
+<form method="POST" action="/admin/settings">
       <input type="hidden" name="product_name" value="<%= settings.product_name %>"/>
       <input type="hidden" name="today_price_per_unit" value="<%= settings.today_price_per_unit %>"/>
       <input type="hidden" name="unit_label" value="<%= settings.unit_label %>"/>
@@ -242,7 +261,12 @@
 <% if (tab === 'payment') { %>
   <div class="card">
     <h2>💰 Payment Master</h2>
-    <form method="POST" action="/admin/settings">
+<div style='margin:12px 0; display:flex; gap:10px; flex-wrap:wrap;'>
+  <a href='/admin/settings?tab=main' style='padding:8px 12px; border-radius:10px; background:#111827; color:#fff; text-decoration:none;'>Main</a>
+  
+</div>
+
+<form method="POST" action="/admin/settings">
       <input type="hidden" name="product_name" value="<%= settings.product_name %>"/>
       <input type="hidden" name="today_price_per_unit" value="<%= settings.today_price_per_unit %>"/>
       <input type="hidden" name="unit_label" value="<%= settings.unit_label %>"/>
@@ -259,5 +283,15 @@
 <% } %>
 
 <%- include("partials/footer", { active: "settings" }) %>
+
+
+
+
+
+<!-- Language Tab -->
+
+
+
+
 
 

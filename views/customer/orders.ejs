@@ -1,0 +1,45 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/customer/customer.css"/>
+  <title>My Orders</title>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="pill" href="/c/home">← Home</a>
+      <div class="h1">My Orders</div>
+      <a class="pill" href="/c/cart">Cart</a>
+    </div>
+
+    <div class="card">
+      <div class="muted">Tap an order to see its status timeline. Use “Add to cart” to reorder.</div>
+    </div>
+
+    <% orders.forEach(o => { %>
+      <div class="card">
+        <div class="item">
+          <a href="/c/orders/<%= o.id %>">
+            <div style="font-weight:900;">#<%= o.id %></div>
+            <div class="muted"><%= new Date(o.created_at).toLocaleString() %></div>
+          </a>
+          <div class="row">
+            <span class="chip <%= (String(o.status).toLowerCase().includes('queue') ? 'queue' : (String(o.status).toLowerCase().includes('close') ? 'closed' : 'active')) %>">
+              <%= o.status %>
+            </span>
+            <span class="pill">₹<%= o.total_amount || 0 %></span>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <form method="POST" action="/c/orders/<%= o.id %>/add-to-cart">
+            <button class="btn warn block" type="submit">Add to Cart</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</body>
+</html>

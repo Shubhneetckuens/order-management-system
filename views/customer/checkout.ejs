@@ -1,0 +1,53 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/customer/customer.css"/>
+  <title>Checkout</title>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="pill" href="/c/cart">← Cart</a>
+      <div class="h1">Checkout</div>
+      <span class="pill">Secure</span>
+    </div>
+
+    <div class="card">
+      <div class="h1" style="font-size:16px;">Delivery</div>
+      <div class="muted" style="margin-top:6px;"><%= c.address || "-" %></div>
+
+      <label>Delivery Day</label>
+      <div class="row">
+        <label class="pill"><input type="radio" name="delivery_day" form="placeForm" value="today" checked> Today</label>
+        <label class="pill"><input type="radio" name="delivery_day" form="placeForm" value="tomorrow"> Tomorrow</label>
+      </div>
+
+      <label>Or select date (calendar)</label>
+      <input type="date" name="delivery_date" form="placeForm"/>
+    </div>
+
+    <div class="card">
+      <div class="h1" style="font-size:16px;">Payment</div>
+      <div class="row" style="margin-top:8px;">
+        <label class="pill"><input type="radio" name="payment_method" form="placeForm" value="COD" checked> Cash on Delivery</label>
+        <label class="pill"><input type="radio" name="payment_method" form="placeForm" value="UPI"> UPI (Pay after)</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="h1" style="font-size:16px;">Bill Breakdown</div>
+      <div class="item"><span class="muted">Items</span><span>₹<%= itemsTotal %></span></div>
+      <div class="item"><span class="muted">Delivery</span><span>₹<%= delivery %></span></div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:10px 0">
+      <div class="item"><span class="big">Total</span><span class="big">₹<%= total %></span></div>
+    </div>
+
+    <form id="placeForm" method="POST" action="/c/place">
+      <button class="btn primary block" type="submit">Place Order →</button>
+      <div class="muted" style="margin-top:8px;">Order will go to Queue for approval.</div>
+    </form>
+  </div>
+</body>
+</html>

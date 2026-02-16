@@ -1,0 +1,62 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/customer/customer.css"/>
+  <title>Cart</title>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="pill" href="/c/products">← Products</a>
+      <div class="h1">Cart</div>
+      <a class="pill" href="/c/orders">My Orders</a>
+    </div>
+
+    <% if(!rows.length){ %>
+      <div class="card">
+        <div class="h1">Cart is empty</div>
+        <div class="muted" style="margin-top:6px;">Add products to continue.</div>
+        <div style="margin-top:12px;">
+          <a class="btn primary block" href="/c/products">Browse Products</a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <div class="h1" style="font-size:16px;">Items</div>
+        <div class="list" style="margin-top:10px;">
+          <% rows.forEach(r => { %>
+            <div class="item">
+              <div>
+                <div style="font-weight:800;"><%= r.product_name %> • <%= r.sub_name %></div>
+                <div class="muted">₹<%= r.price %> × <%= r.qty %> = ₹<%= r.line %></div>
+              </div>
+              <div class="pill"><%= r.qty %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h1" style="font-size:16px;">Bill Breakdown</div>
+        <div class="item"><span class="muted">Items</span><span>₹<%= itemsTotal %></span></div>
+        <div class="item"><span class="muted">Delivery</span><span>₹<%= delivery %></span></div>
+        <hr style="border:0;border-top:1px solid var(--border);margin:10px 0">
+        <div class="item"><span class="big">Total</span><span class="big">₹<%= total %></span></div>
+      </div>
+
+      <div class="sticky">
+        <div class="inner">
+          <div class="kv">
+            <div class="muted">Total</div>
+            <div class="big">₹<%= total %></div>
+          </div>
+          <a class="btn primary" href="/c/checkout">Checkout →</a>
+        </div>
+      </div>
+    <% } %>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/customer/customer.css"/>
+  <title>Order Detail</title>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="pill" href="/c/orders">← My Orders</a>
+      <div class="h1">Order #<%= order.id %></div>
+      <a class="pill" href="/c/cart">Cart</a>
+    </div>
+
+    <div class="card">
+      <div class="h1" style="font-size:16px;">Status</div>
+      <div class="timeline" style="margin-top:10px;">
+        <span class="dot on"></span><span class="muted">Placed</span>
+        <span class="dot <%= (String(order.status).toLowerCase().includes('active') || String(order.status).toLowerCase().includes('confirm') || String(order.status).toLowerCase().includes('dispatch') || String(order.status).toLowerCase().includes('deliver')) ? 'on' : '' %>"></span><span class="muted">Confirmed</span>
+        <span class="dot <%= String(order.status).toLowerCase().includes('dispatch') ? 'on' : '' %>"></span><span class="muted">Dispatched</span>
+        <span class="dot <%= (String(order.status).toLowerCase().includes('deliver') || String(order.status).toLowerCase().includes('close')) ? 'on' : '' %>"></span><span class="muted">Delivered</span>
+      </div>
+      <div style="margin-top:10px;" class="pill">Current: <%= order.status %></div>
+    </div>
+
+    <div class="card">
+      <div class="h1" style="font-size:16px;">Items</div>
+      <div class="list" style="margin-top:10px;">
+        <% items.forEach(i => { %>
+          <div class="item">
+            <div>
+              <div style="font-weight:900;"><%= i.product_name %> • <%= i.sub_name %></div>
+              <div class="muted">₹<%= i.price %> × <%= i.quantity %></div>
+            </div>
+            <div class="pill">x<%= i.quantity %></div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/customer/customer.css"/>
+  <script src="/customer/customer.js" defer></script>
+  <title>Profile</title>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="h1">Welcome 👋</div>
+      <div class="pill">Customer</div>
+    </div>
+
+    <form class="card" method="POST" action="/c/profile">
+      <label>Your Name</label>
+      <input name="name" value="<%= (c && c.name) ? c.name : '' %>" placeholder="Enter your name" required />
+
+      <label>Address</label>
+      <textarea name="address" placeholder="Flat no, building, area, landmark" required><%= (c && c.address) ? c.address : '' %></textarea>
+
+      <input type="hidden" id="lat" name="latitude" value="<%= (c && c.latitude) ? c.latitude : '' %>"/>
+      <input type="hidden" id="lng" name="longitude" value="<%= (c && c.longitude) ? c.longitude : '' %>"/>
+
+      <button type="button" id="locBtn" class="btn block">📍 Use Current Location</button>
+
+      <div style="margin-top:12px;">
+        <button class="btn primary block" type="submit">Save & Continue</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    useCurrentLocation("locBtn", "lat", "lng");
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/customer/customer.css"/>
+  <title>Products</title>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="pill" href="/c/home">← Home</a>
+      <div class="h1">Products</div>
+      <a class="pill" href="/c/cart">Cart</a>
+    </div>
+
+    <% products.forEach(p => { %>
+      <div class="card">
+        <div class="h1" style="font-size:16px;"><%= p.name %></div>
+        <div class="list" style="margin-top:10px;">
+          <% subs.filter(s=>s.product_id===p.id).forEach(s => { %>
+            <div class="item">
+              <div>
+                <div style="font-weight:800;"><%= s.name %></div>
+                <div class="muted">₹<%= s.price %> / <%= s.unit %></div>
+              </div>
+              <form method="POST" action="/c/cart/add">
+                <input type="hidden" name="items[0][sub_product_id]" value="<%= s.id %>"/>
+                <input type="hidden" name="items[0][qty]" value="1"/>
+                <button class="btn sm" type="submit">+ Add</button>
+              </form>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    <% }) %>
+
+    <div class="sticky">
+      <div class="inner">
+        <div class="kv">
+          <div class="muted">Ready?</div>
+          <div class="big">Go to Cart</div>
+        </div>
+        <a class="btn primary" href="/c/cart">Cart →</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
