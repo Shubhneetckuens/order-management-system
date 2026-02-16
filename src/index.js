@@ -12,6 +12,8 @@ const { handleIncomingMessage } = require("./logic");
 
 const app = express();
 
+
+app.locals.db = db;
 app.use('/customer', express.static('public/customer'));
 app.use(cors());
 app.use(express.json());
@@ -684,5 +686,6 @@ app.post("/admin/orders/:id/update-final", async (req, res) => {
 
 
 app.use('/c', customerRoutes);
+
 
 

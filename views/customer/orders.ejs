@@ -15,7 +15,7 @@
     </div>
 
     <div class="card">
-      <div class="muted">Tap an order to see its status timeline. Use “Add to cart” to reorder.</div>
+      <div class="muted">Tap an order to see status. Use “Add to cart” to reorder.</div>
     </div>
 
     <% orders.forEach(o => { %>
@@ -25,10 +25,10 @@
             <div style="font-weight:900;">#<%= o.id %></div>
             <div class="muted"><%= new Date(o.created_at).toLocaleString() %></div>
           </a>
+
           <div class="row">
-            <span class="chip <%= (String(o.status).toLowerCase().includes('queue') ? 'queue' : (String(o.status).toLowerCase().includes('close') ? 'closed' : 'active')) %>">
-              <%= o.status %>
-            </span>
+            <span class="chip <%= o.status_chip %>"><%= o.status_display %></span>
+            <span class="pill"><%= (String(o.payment_status||'').toUpperCase()==='PAID') ? 'Paid' : 'Unpaid' %></span>
             <span class="pill">₹<%= o.total_amount || 0 %></span>
           </div>
         </div>

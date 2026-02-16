@@ -16,13 +16,31 @@
 
     <div class="card">
       <div class="h1" style="font-size:16px;">Status</div>
+
+      <% const os = String(order.order_status || '').toUpperCase(); %>
+      <% const fs = String(order.fulfillment_status || '').toUpperCase(); %>
+
       <div class="timeline" style="margin-top:10px;">
         <span class="dot on"></span><span class="muted">Placed</span>
-        <span class="dot <%= (String(order.status).toLowerCase().includes('active') || String(order.status).toLowerCase().includes('confirm') || String(order.status).toLowerCase().includes('dispatch') || String(order.status).toLowerCase().includes('deliver')) ? 'on' : '' %>"></span><span class="muted">Confirmed</span>
-        <span class="dot <%= String(order.status).toLowerCase().includes('dispatch') ? 'on' : '' %>"></span><span class="muted">Dispatched</span>
-        <span class="dot <%= (String(order.status).toLowerCase().includes('deliver') || String(order.status).toLowerCase().includes('close')) ? 'on' : '' %>"></span><span class="muted">Delivered</span>
+
+        <span class="dot <%= (os === 'ACTIVE' || os === 'CLOSED') ? 'on' : '' %>"></span>
+        <span class="muted">Confirmed</span>
+
+        <span class="dot <%= (fs === 'DISPATCHED' || fs === 'DELIVERED' || os === 'CLOSED') ? 'on' : '' %>"></span>
+        <span class="muted">Dispatched</span>
+
+        <span class="dot <%= (fs === 'DELIVERED' || os === 'CLOSED') ? 'on' : '' %>"></span>
+        <span class="muted">Delivered</span>
       </div>
-      <div style="margin-top:10px;" class="pill">Current: <%= order.status %></div>
+
+      <div style="margin-top:10px;" class="pill">
+        Current: <%= order.status_display || (order.order_status || order.status) %>
+      </div>
+
+      <div style="margin-top:10px;" class="row">
+        <span class="pill"><%= (String(order.payment_status||'').toUpperCase()==='PAID') ? 'Paid' : 'Unpaid' %></span>
+        <span class="pill">Total: ₹<%= order.total %></span>
+      </div>
     </div>
 
     <div class="card">

@@ -14,36 +14,67 @@
       <a class="pill" href="/c/cart">Cart</a>
     </div>
 
-    <% products.forEach(p => { %>
-      <div class="card">
-        <div class="h1" style="font-size:16px;"><%= p.name %></div>
-        <div class="list" style="margin-top:10px;">
-          <% subs.filter(s=>s.product_id===p.id).forEach(s => { %>
-            <div class="item">
-              <div>
-                <div style="font-weight:800;"><%= s.name %></div>
-                <div class="muted">₹<%= s.price %> / <%= s.unit %></div>
-              </div>
-              <form method="POST" action="/c/cart/add">
-                <input type="hidden" name="items[0][sub_product_id]" value="<%= s.id %>"/>
-                <input type="hidden" name="items[0][qty]" value="1"/>
-                <button class="btn sm" type="submit">+ Add</button>
-              </form>
-            </div>
-          <% }) %>
-        </div>
-      </div>
-    <% }) %>
+    <form id="prodForm" method="POST" action="/c/cart/set">
+      <% products.forEach(p => { %>
+        <div class="card">
+          <div class="h1" style="font-size:16px;"><%= p.name %></div>
+          <div class="list" style="margin-top:10px;">
+            <% subs.filter(s=>s.product_id===p.id).forEach(s => { %>
+              <div class="item">
+                <div>
+                  <div style="font-weight:800;"><%= s.name %></div>
+                  <div class="muted">₹<%= s.price %> / <%= s.unit %></div>
+                </div>
 
-    <div class="sticky">
-      <div class="inner">
-        <div class="kv">
-          <div class="muted">Ready?</div>
-          <div class="big">Go to Cart</div>
+                <div class="qty">
+                  <button type="button" class="qbtn" data-delta="-1" data-id="<%= s.id %>">-</button>
+                  <span class="pill" id="qv-<%= s.id %>"><%= (cart && cart[String(s.id)]) ? cart[String(s.id)] : 0 %></span>
+                  <button type="button" class="qbtn" data-delta="1" data-id="<%= s.id %>">+</button>
+                </div>
+
+                <input type="hidden" name="qty[<%= s.id %>]" id="qi-<%= s.id %>" value="<%= (cart && cart[String(s.id)]) ? cart[String(s.id)] : 0 %>"/>
+              </div>
+            <% }) %>
+          </div>
         </div>
-        <a class="btn primary" href="/c/cart">Cart →</a>
+      <% }) %>
+
+      <div class="sticky" id="stickyBar" style="display:none;">
+        <div class="inner">
+          <div class="kv">
+            <div class="muted">Selected</div>
+            <div class="big"><span id="selCount">0</span> items</div>
+          </div>
+          <button class="btn primary" type="submit">Add to Cart →</button>
+        </div>
       </div>
-    </div>
+    </form>
   </div>
+
+  <script>
+    function refreshSticky(){
+      const inputs = document.querySelectorAll('input[id^="qi-"]');
+      let count = 0;
+      inputs.forEach(i => { if(Number(i.value||0) > 0) count++; });
+      document.getElementById('selCount').textContent = String(count);
+      document.getElementById('stickyBar').style.display = count > 0 ? 'block' : 'none';
+    }
+
+    document.querySelectorAll('.qbtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const delta = Number(btn.getAttribute('data-delta'));
+        const inp = document.getElementById('qi-' + id);
+        const valEl = document.getElementById('qv-' + id);
+        let v = Number(inp.value || 0) + delta;
+        if(v < 0) v = 0;
+        inp.value = String(v);
+        valEl.textContent = String(v);
+        refreshSticky();
+      });
+    });
+
+    refreshSticky();
+  </script>
 </body>
 </html>
