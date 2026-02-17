@@ -15,15 +15,26 @@
     </div>
 
     <form id="prodForm" method="POST" action="/c/cart/set">
+      <input type="hidden" name="cart_json" id="cart_json" value="{}"/>
+
       <% products.forEach(p => { %>
         <div class="card">
           <div class="h1" style="font-size:16px;"><%= p.name %></div>
+
           <div class="list" style="margin-top:10px;">
-            <% subs.filter(s=>s.product_id===p.id).forEach(s => { %>
+            <% subs.filter(s => String(s.product_id) == String(p.id)).forEach(s => { %>
               <div class="item">
-                <div>
-                  <div style="font-weight:800;"><%= s.name %></div>
-                  <div class="muted">₹<%= s.price %> / <%= s.unit %></div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                  <% if(s.image_url){ %>
+                    <img src="<%= s.image_url %>" alt="" style="width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid var(--border);"/>
+                  <% } else { %>
+                    <div style="width:52px;height:52px;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;"></div>
+                  <% } %>
+
+                  <div>
+                    <div style="font-weight:800;"><%= s.name %></div>
+                    <div class="muted">₹<%= s.price %> / <%= s.unit %></div>
+                  </div>
                 </div>
 
                 <div class="qty">
@@ -32,6 +43,7 @@
                   <button type="button" class="qbtn" data-delta="1" data-id="<%= s.id %>">+</button>
                 </div>
 
+                <!-- keep old fields too -->
                 <input type="hidden" name="qty[<%= s.id %>]" id="qi-<%= s.id %>" value="<%= (cart && cart[String(s.id)]) ? cart[String(s.id)] : 0 %>"/>
               </div>
             <% }) %>
@@ -52,12 +64,20 @@
   </div>
 
   <script>
+    function collectCart(){
+      const obj = {};
+      document.querySelectorAll('input[id^="qi-"]').forEach(i=>{
+        const id = i.id.replace('qi-','');
+        const v = Number(i.value||0);
+        if(v>0) obj[id]=v;
+      });
+      return obj;
+    }
+
     function refreshSticky(){
-      const inputs = document.querySelectorAll('input[id^="qi-"]');
-      let count = 0;
-      inputs.forEach(i => { if(Number(i.value||0) > 0) count++; });
-      document.getElementById('selCount').textContent = String(count);
-      document.getElementById('stickyBar').style.display = count > 0 ? 'block' : 'none';
+      const obj = collectCart();
+      document.getElementById('selCount').textContent = String(Object.keys(obj).length);
+      document.getElementById('stickyBar').style.display = Object.keys(obj).length ? 'block' : 'none';
     }
 
     document.querySelectorAll('.qbtn').forEach(btn => {
@@ -72,6 +92,12 @@
         valEl.textContent = String(v);
         refreshSticky();
       });
+    });
+
+    document.getElementById('prodForm').addEventListener('submit', (e)=>{
+      const obj = collectCart();
+      document.getElementById('cart_json').value = JSON.stringify(obj);
+      // allow normal submit
     });
 
     refreshSticky();

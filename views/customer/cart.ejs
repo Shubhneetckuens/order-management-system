@@ -32,13 +32,19 @@
         <div class="list" style="margin-top:10px;">
           <% rows.forEach(r => { %>
             <div class="item">
-              <div>
-                <div style="font-weight:800;"><%= r.product_name %> • <%= r.sub_name %></div>
+              <div style="display:flex;gap:10px;align-items:center;">
+  <% if(r.image_url){ %>
+    <img src="<%= r.image_url %>" alt="" style="width:46px;height:46px;border-radius:12px;object-fit:cover;border:1px solid var(--border);"/>
+  <% } else { %>
+    <div style="width:46px;height:46px;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;"></div>
+  <% } %>
+  <div>
+    <div style="font-weight:800;"><%= r.product_name %> • <%= r.sub_name %></div>
                 <div class="muted">₹<%= r.price %> / <%= r.unit %></div>
                 <div class="muted" style="margin-top:4px;">Line: ₹<%= r.line %></div>
-              </div>
-
-              <div class="qty">
+                </div>
+</div>
+<div class="qty">
                 <form method="POST" action="/c/cart/update" style="margin:0;">
                   <input type="hidden" name="sub_product_id" value="<%= r.id %>"/>
                   <input type="hidden" name="delta" value="-1"/>
@@ -83,3 +89,4 @@
   </div>
 </body>
 </html>
+

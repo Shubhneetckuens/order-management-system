@@ -11,28 +11,38 @@
     <div class="topbar">
       <a class="pill" href="/c/cart">← Cart</a>
       <div class="h1">Checkout</div>
-      <span class="pill">Secure</span>
+      <a class="pill" href="/c/orders">My Orders</a>
     </div>
 
     <div class="card">
       <div class="h1" style="font-size:16px;">Delivery</div>
-      <div class="muted" style="margin-top:6px;"><%= c.address || "-" %></div>
-
-      <label>Delivery Day</label>
-      <div class="row">
-        <label class="pill"><input type="radio" name="delivery_day" form="placeForm" value="today" checked> Today</label>
-        <label class="pill"><input type="radio" name="delivery_day" form="placeForm" value="tomorrow"> Tomorrow</label>
+      <div class="muted" style="margin-top:6px;"><%= c.name || '' %></div>
+      <div class="muted"><%= c.address || '' %></div>
+      <div style="margin-top:10px;">
+        <a class="btn block" href="/c/profile">Edit Profile</a>
       </div>
-
-      <label>Or select date (calendar)</label>
-      <input type="date" name="delivery_date" form="placeForm"/>
     </div>
 
     <div class="card">
-      <div class="h1" style="font-size:16px;">Payment</div>
-      <div class="row" style="margin-top:8px;">
-        <label class="pill"><input type="radio" name="payment_method" form="placeForm" value="COD" checked> Cash on Delivery</label>
-        <label class="pill"><input type="radio" name="payment_method" form="placeForm" value="UPI"> UPI (Pay after)</label>
+      <div class="h1" style="font-size:16px;">Items</div>
+      <div class="list" style="margin-top:10px;">
+        <% rows.forEach(r => { %>
+          <div class="item">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <% if(r.image_url){ %>
+                <img src="<%= r.image_url %>" alt="" style="width:46px;height:46px;border-radius:12px;object-fit:cover;border:1px solid var(--border);"/>
+              <% } else { %>
+                <div style="width:46px;height:46px;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;"></div>
+              <% } %>
+
+              <div>
+                <div style="font-weight:900;"><%= r.product_name %> • <%= r.sub_name %></div>
+                <div class="muted">₹<%= r.price %> × <%= r.qty %></div>
+              </div>
+            </div>
+            <div class="pill">₹<%= r.line %></div>
+          </div>
+        <% }) %>
       </div>
     </div>
 
@@ -44,10 +54,73 @@
       <div class="item"><span class="big">Total</span><span class="big">₹<%= total %></span></div>
     </div>
 
-    <form id="placeForm" method="POST" action="/c/place">
-      <button class="btn primary block" type="submit">Place Order →</button>
-      <div class="muted" style="margin-top:8px;">Order will go to Queue for approval.</div>
+    <form method="POST" action="/c/place">
+      <div class="card">
+        <div class="h1" style="font-size:16px;">Delivery schedule</div>
+        <div style="margin-top:10px;">
+          <label class="pill" style="display:block;margin-bottom:8px;">
+            <input type="radio" name="delivery_day" value="today" checked> Today
+          </label>
+          <label class="pill" style="display:block;margin-bottom:8px;">
+            <input type="radio" name="delivery_day" value="tomorrow"> Tomorrow
+          </label>
+          <div class="muted" style="margin-top:8px;">Or pick a date</div>
+          <input class="pill" style="width:100%;margin-top:8px;" type="date" name="delivery_date">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h1" style="font-size:16px;">Payment</div>
+
+        <label class="pill" style="display:block;margin-top:10px;">
+          <input type="radio" name="payment_method" value="COD" checked> COD
+        </label>
+
+        <label class="pill" style="display:block;margin-top:10px;">
+          <input type="radio" name="payment_method" value="UPI"> UPI
+        </label>
+
+        <div id="upiBox" style="display:none;margin-top:12px;">
+          <% if(upi_id){ %>
+            <div class="muted">Scan QR or tap UPI ID</div>
+            <% if(qr_data_url){ %>
+              <div style="margin-top:10px;text-align:center;">
+                <img src="<%= qr_data_url %>" alt="UPI QR" style="width:200px;height:200px;border-radius:16px;border:1px solid var(--border);"/>
+              </div>
+            <% } %>
+
+            <div style="margin-top:10px;">
+              <a class="btn block primary" href="<%= upi_link %>">Pay with UPI App</a>
+            </div>
+
+            <div style="margin-top:10px;text-align:center;">
+              <a class="pill" href="<%= upi_link %>" style="display:inline-block;"><%= upi_id %></a>
+            </div>
+          <% } else { %>
+            <div class="muted">UPI is not configured in Settings</div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="sticky">
+        <div class="inner">
+          <div class="kv">
+            <div class="muted">Total</div>
+            <div class="big">₹<%= total %></div>
+          </div>
+          <button class="btn primary" type="submit">Place Order →</button>
+        </div>
+      </div>
     </form>
   </div>
+
+  <script>
+    function toggleUPI(){
+      const upi = document.querySelector('input[name="payment_method"][value="UPI"]');
+      document.getElementById('upiBox').style.display = (upi && upi.checked) ? 'block' : 'none';
+    }
+    document.querySelectorAll('input[name="payment_method"]').forEach(r => r.addEventListener('change', toggleUPI));
+    toggleUPI();
+  </script>
 </body>
 </html>

@@ -189,10 +189,7 @@ router.get("/orders/:id", requireCustomer, async (req, res) => {
   res.render("customer/order_detail", { order, items: items.rows });
 });
 
-router.get("/new", requireCustomer, (req, res) => {
-  res.render("customer/new_start");
-});
-
+router.get("/new", requireCustomer, (req, res) => { return res.redirect("/c/products"); });
 router.get("/products", requireCustomer, async (req, res) => {
   const products = await db.query(
     `SELECT id, name
@@ -202,7 +199,7 @@ router.get("/products", requireCustomer, async (req, res) => {
   );
 
   const subs = await db.query(
-    `SELECT id, product_id, name, price_per_unit AS price, unit_label AS unit, is_active
+    `SELECT id, product_id, name, price_per_unit AS price, unit_label AS unit, image_url, is_active
      FROM sub_products
      WHERE is_active=true
      ORDER BY product_id, name`
@@ -218,32 +215,39 @@ router.get("/products", requireCustomer, async (req, res) => {
 router.post("/cart/set", requireCustomer, (req, res) => {
   const cart = {};
 
-  // Case A: body-parser with extended=true => req.body.qty is an object: { "12": "2", ... }
-  if (req.body && req.body.qty && typeof req.body.qty === "object") {
-    for (const k of Object.keys(req.body.qty)) {
-      const sid = String(k).trim();
-      const q = Number(req.body.qty[k] || 0);
-      if (!sid || !(q > 0)) continue;
-      cart[sid] = q;
+  // Most reliable: cart_json coming from products page JS
+  if (req.body && req.body.cart_json) {
+    try {
+      const obj = JSON.parse(String(req.body.cart_json || "{}"));
+      for (const sid of Object.keys(obj)) {
+        const q = Number(obj[sid] || 0);
+        if (q > 0) cart[String(sid)] = q;
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // Backward compatible: qty object (extended=true)
+  if (Object.keys(cart).length === 0 && req.body && req.body.qty && typeof req.body.qty === "object") {
+    for (const sid of Object.keys(req.body.qty)) {
+      const q = Number(req.body.qty[sid] || 0);
+      if (q > 0) cart[String(sid)] = q;
     }
   }
 
-  // Case B: extended=false => keys come like: { "qty[12]": "2", "qty[99]": "1" }
+  // Backward compatible: flat keys qty[ID]
   if (Object.keys(cart).length === 0 && req.body && typeof req.body === "object") {
     for (const k of Object.keys(req.body)) {
       const m = /^qty\[(\d+)\]$/.exec(k);
       if (!m) continue;
-      const sid = String(m[1]);
+      const sid = m[1];
       const q = Number(req.body[k] || 0);
-      if (!(q > 0)) continue;
-      cart[sid] = q;
+      if (q > 0) cart[String(sid)] = q;
     }
   }
 
   req.session.cart = cart;
   return res.redirect("/c/cart");
-});
-/* NEW: +/- in cart
+});/* NEW: +/- in cart
    body: sub_product_id, delta (+1/-1)
 */
 router.post("/cart/update", requireCustomer, (req, res) => {
@@ -268,11 +272,7 @@ router.get("/cart", requireCustomer, async (req, res) => {
   let rows = [];
   if (ids.length) {
     const q = await db.query(
-      `SELECT sp.id,
-              sp.name AS sub_name,
-              sp.price_per_unit AS price,
-              sp.unit_label AS unit,
-              p.name AS product_name
+      `SELECT sp.id, sp.name AS sub_name, sp.price_per_unit AS price, sp.unit_label AS unit, sp.image_url, p.name AS product_name
        FROM sub_products sp
        JOIN products p ON p.id = sp.product_id
        WHERE sp.id = ANY($1::int[])`,
@@ -343,11 +343,7 @@ router.get("/checkout", requireCustomer, async (req, res) => {
   let rows = [];
   if (ids.length) {
     const q = await db.query(
-      `SELECT sp.id,
-              sp.name AS sub_name,
-              sp.price_per_unit AS price,
-              sp.unit_label AS unit,
-              p.name AS product_name
+      `SELECT sp.id, sp.name AS sub_name, sp.price_per_unit AS price, sp.unit_label AS unit, sp.image_url, p.name AS product_name
        FROM sub_products sp
        JOIN products p ON p.id = sp.product_id
        WHERE sp.id = ANY($1::int[])`,
@@ -370,7 +366,18 @@ router.get("/checkout", requireCustomer, async (req, res) => {
   const delivery = itemsTotal >= freeTh ? 0 : delFee;
   const total = itemsTotal + delivery;
 
-  res.render("customer/checkout", { c: cust.rows[0], rows, itemsTotal, delivery, total, upi_id: s.rows[0]?.upi_id || "" });
+    const QRCode = require("qrcode");
+  const upi_id = (s.rows[0]?.upi_id || "").trim();
+  let upi_link = "";
+  let qr_data_url = "";
+
+  if (upi_id) {
+    // UPI deep link (amount included). pn can be changed later to your shop name.
+    upi_link = `upi://pay?pa=${encodeURIComponent(upi_id)}&pn=${encodeURIComponent("Order Management System")}&am=${encodeURIComponent(String(total))}&cu=INR`;
+    qr_data_url = await QRCode.toDataURL(upi_link);
+  }
+
+  res.render("customer/checkout", { c: cust.rows[0], rows, itemsTotal, delivery, total, upi_id, upi_link, qr_data_url });
 });
 
 router.post("/place", requireCustomer, async (req, res) => {
@@ -450,4 +457,5 @@ router.post("/place", requireCustomer, async (req, res) => {
 });
 
 module.exports = router;
+
 

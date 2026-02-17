@@ -4,36 +4,56 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <link rel="stylesheet" href="/customer/customer.css"/>
-  <script src="/customer/customer.js" defer></script>
   <title>Profile</title>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
-      <div class="h1">Welcome 👋</div>
-      <div class="pill">Customer</div>
+      <a class="pill" href="/c/home">← Home</a>
+      <div class="h1">Profile</div>
+      <a class="pill" href="/c/orders">My Orders</a>
     </div>
 
-    <form class="card" method="POST" action="/c/profile">
-      <label>Your Name</label>
-      <input name="name" value="<%= (c && c.name) ? c.name : '' %>" placeholder="Enter your name" required />
+    <form method="POST" action="/c/profile">
+      <div class="card">
+        <div class="h1" style="font-size:16px;">Customer Details</div>
 
-      <label>Address</label>
-      <textarea name="address" placeholder="Flat no, building, area, landmark" required><%= (c && c.address) ? c.address : '' %></textarea>
+        <div class="muted" style="margin-top:10px;">Phone</div>
+        <div class="pill" style="width:100%;"><%= c.phone || '' %></div>
 
-      <input type="hidden" id="lat" name="latitude" value="<%= (c && c.latitude) ? c.latitude : '' %>"/>
-      <input type="hidden" id="lng" name="longitude" value="<%= (c && c.longitude) ? c.longitude : '' %>"/>
+        <div class="muted" style="margin-top:10px;">Name</div>
+        <input class="pill" style="width:100%;" name="name" value="<%= c.name || '' %>" placeholder="Enter your name"/>
 
-      <button type="button" id="locBtn" class="btn block">📍 Use Current Location</button>
+        <div class="muted" style="margin-top:10px;">Address</div>
+        <textarea class="pill" style="width:100%;min-height:90px;" name="address" placeholder="Enter full address"><%= c.address || '' %></textarea>
 
-      <div style="margin-top:12px;">
-        <button class="btn primary block" type="submit">Save & Continue</button>
+        <input type="hidden" name="latitude" id="lat" value="<%= (c.latitude ?? '') %>"/>
+        <input type="hidden" name="longitude" id="lng" value="<%= (c.longitude ?? '') %>"/>
+
+        <div style="margin-top:12px;">
+          <button class="btn primary block" type="submit">Save</button>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button class="btn block" type="button" id="useLoc">Use current location</button>
+          <div class="muted" style="margin-top:8px;">(Will save latitude/longitude)</div>
+        </div>
       </div>
     </form>
   </div>
 
   <script>
-    useCurrentLocation("locBtn", "lat", "lng");
+    document.getElementById('useLoc').addEventListener('click', () => {
+      if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById('lat').value = pos.coords.latitude;
+          document.getElementById('lng').value = pos.coords.longitude;
+          alert('Location captured. Click Save to store.');
+        },
+        () => alert('Location permission denied')
+      );
+    });
   </script>
 </body>
 </html>
