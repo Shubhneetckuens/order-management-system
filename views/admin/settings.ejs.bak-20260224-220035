@@ -200,7 +200,7 @@
                   <div style="height:8px"></div>
 
                   <form method="POST" action="/admin/sub-products/<%= sp.id %>/image" enctype="multipart/form-data" style="margin:0 0 8px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-  <img src="/img/sub/<%= sp.id %>" onerror="this.onerror=null;this.src='/img/placeholder.svg';" alt="" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb;">
+  <img src="<%= sp.image_url ? sp.image_url : '/img/placeholder.svg' %>" alt="" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb;">
   <input type="file" name="image" accept="image/*" capture="environment" required style="max-width:220px;">
   <button class="btn secondary" type="submit">Change Image</button>
 </form><form method="POST" action="/admin/sub-products/<%= sp.id %>/toggle" style="margin:0;">
@@ -231,7 +231,7 @@
                   <input name="unit_label" value="KG" />
                 </div>
               </div>
-              <div style="margin-top:4px;"><label>Image</label><input type="file" name="image" accept="image/*" capture="environment"></div>
+              <div style="margin-top:4px;"><label>Image</label><input type="file" name="sub_image" accept="image/*" capture="environment"></div>
 <div style="height:4px"></div>
 <button class="btn secondary" type="submit">Add Variant</button>
             </form>
@@ -303,8 +303,6 @@
 
 
 <!-- Language Tab -->
-
-
 
 
 

@@ -1,4 +1,4 @@
-
+﻿
 
 <style>
 /* Fix <details class="order"> expansion in Android/WebView */
@@ -34,4 +34,36 @@ details.order > summary::-webkit-details-marker{ display:none; }
 
 
 
+
+
+<style>
+  /* Add Product tab spacing tighten */
+  #addProductForm .order{ padding:10px !important; }
+  #addProductForm .order + .order{ margin-top:10px !important; }
+  #addProductForm .btn{ margin-top:10px !important; }
+</style>
+
+
+<style>
+/* FIX_ADD_TAB_STICKY: make Add/Sub buttons NOT stick to bottom (remove huge empty gap) */
+#addProductForm button,
+#addProductForm .btn,
+#addProductForm a.btn{
+  position: static !important;
+}
+
+#addProductForm .card{
+  padding-bottom: 16px !important;
+}
+
+/* if those bars are inside a wrapper with fixed height/min-height */
+#addProductForm{
+  min-height: auto !important;
+}
+
+/* reduce extra margins around those buttons */
+#addProductForm button{
+  margin-top: 12px !important;
+}
+</style>
 

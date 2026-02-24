@@ -25,7 +25,11 @@
             <% subs.filter(s => String(s.product_id) == String(p.id)).forEach(s => { %>
               <div class="item">
                 <div style="display:flex;gap:10px;align-items:center;">
-                  <img src="/img/sub/<%= s.id %>" onerror="this.onerror=null;this.src='/img/placeholder.svg';" style="width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid var(--border);"/>
+                  <% if(s.image_url){ %>
+                    <img src="/img/sub/<%= s.id %>" onerror="this.onerror=null;this.src='/img/placeholder.svg';" onerror="this.onerror=null;this.src='/img/placeholder.svg';" style="width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid var(--border);"/>
+                  <% } else { %>
+                    <div style="width:52px;height:52px;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;"></div>
+                  <% } %>
 
                   <div>
                     <div style="font-weight:800;"><%= s.name %></div>
@@ -100,7 +104,6 @@
   </script>
 </body>
 </html>
-
 
 
 

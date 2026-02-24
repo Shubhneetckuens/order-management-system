@@ -556,36 +556,37 @@ app.get("/admin/sub-products", async (req, res) => {
 app.post("/admin/sub-products", upload.single("image"), async (req, res) => {
   const product_id = parseInt(req.body.product_id, 10);
   const name = (req.body.name || "").trim();
-  const price = parseFloat(req.body.price_per_unit || req.body.price || 0);
-  const unit = (req.body.unit_label || req.body.unit || "KG").trim() || "KG";
+  const price = parseFloat(req.body.price_per_unit || 0);
+  const unit = (req.body.unit_label || "KG").trim();
 
-  if (!product_id || !name) return res.redirect("/admin/sub-products?toast=Enter all fields");
-
-  // optional image
-  let img = null;
-  try{
-    if(req.file){
-      const buf = await sharp(req.file.buffer).rotate().resize(600,600,{fit:"cover"}).jpeg({quality:82}).toBuffer();
-      img = { buf, mime: "image/jpeg" };
+  
+  const image_url = await saveResizedImage(req.file);
+    // DELETE_OLD_SUBPRODUCT_IMAGE
+    const old = await db.query("SELECT image_url FROM sub_products WHERE id=const image_url = await saveResizedImage(req.file);", [id]);
+    const oldUrl = old.rows[0] && old.rows[0].image_url;
+    if(oldUrl && oldUrl.startsWith("/uploads/")){
+      const fs = require("fs");
+      const path = require("path");
+      const fp = path.join(__dirname, "..", "public", oldUrl.replace("/uploads/","uploads/"));
+      try { if(fs.existsSync(fp)) fs.unlinkSync(fp); } catch(e){}
     }
-  }catch(e){
-    console.error("Image process failed:", e.message);
-  }
+if (!product_id || !name) return res.redirect("/admin/sub-products?toast=Enter all fields");
 
   await db.query(
-    `INSERT INTO sub_products (product_id, name, price_per_unit, unit_label, image_blob, image_mime)
+        `INSERT INTO sub_products (product_id, name, price_per_unit, unit_label, image_blob, image_mime)
      VALUES ($1,$2,$3,$4,$5,$6)
      ON CONFLICT (product_id, name)
-     DO UPDATE SET
-       price_per_unit=EXCLUDED.price_per_unit,
-       unit_label=EXCLUDED.unit_label,
-       image_blob=COALESCE(EXCLUDED.image_blob, sub_products.image_blob),
-       image_mime=COALESCE(EXCLUDED.image_mime, sub_products.image_mime)`,
-    [product_id, name, price, unit, img ? img.buf : null, img ? img.mime : null]
+     DO UPDATE SET price_per_unit=EXCLUDED.price_per_unit,
+                     unit_label=EXCLUDED.unit_label,
+                     image_blob=COALESCE(EXCLUDED.image_blob, sub_products.image_blob),
+                     image_mime=COALESCE(EXCLUDED.image_mime, sub_products.image_mime)`,
+    [product_id, name, price, unit, image_url]
   );
 
-  res.redirect("/admin/sub-products?toast=Saved");
-});app.post("/admin/sub-products/:id/toggle", upload.single("image"), async (req, res) => {
+  res.redirect("/admin/sub-products?toast=Sub-product saved");
+});
+
+app.post("/admin/sub-products/:id/toggle", upload.single("image"), async (req, res) => {
   const id = req.params.id;
   await db.query("UPDATE sub_products SET is_active = NOT is_active WHERE id=$1", [id]);
   res.redirect("/admin/sub-products?toast=Updated");
@@ -795,7 +796,6 @@ app.get("/img/sub/:id", async (req, res) => {
     return res.status(500).end();
   }
 });
-
 
 
 
