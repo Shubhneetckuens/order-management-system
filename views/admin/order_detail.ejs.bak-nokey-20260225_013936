@@ -38,7 +38,7 @@
       <% } %>
     </div>
 
-    <form method="POST" action="/admin/orders/<%= order.id %>/payment" style="margin-top:12px;">
+    <form method="POST" action="/admin/orders/<%= order.id %>/payment?key=<%= _key %>" style="margin-top:12px;">
       <label>Payment Note</label>
       <input name="payment_note" value="<%= order.payment_note || '' %>" placeholder="e.g. UTR verified" />
 
@@ -225,6 +225,5 @@
 </div>
 
 <%- include("partials/footer", { active: "orders" }) %>
-
 
 

@@ -147,29 +147,7 @@ router.get("/orders/:id", requireCustomer, async (req, res) => {
   const customerId = req.session.customer_id;
   const orderId = Number(req.params.id);
 
-  
-  // ✅ Fill inferred values + UTR AFTER insert (prevents placeholder mismatch)
-  try {
-    await db.query(
-      `UPDATE orders SET
-         inferred_qty = const orderId = Number(req.params.id);
-
-  ,
-         inferred_delivery_day = $2,
-         inferred_subtotal = $3,
-         inferred_delivery_charge = $4,
-         inferred_total = $5,
-         inferred_address_snapshot = $6,
-         payment_utr = $7,
-         payment_requested_at = CASE WHEN $8 = 'UPI' THEN COALESCE(payment_requested_at, NOW()) ELSE payment_requested_at END,
-         updated_at = NOW()
-       WHERE id = $9`,
-      [inferred_qty, inferred_day, itemsSubtotal, delivery_charge, total, address, payment_utr, payment_method, orderId]
-    );
-  } catch (e) {
-    console.error("INFERRED UPDATE ERROR:", e);
-  }
-const o = await db.query(
+  const o = await db.query(
     `SELECT *
      FROM orders
      WHERE id=$1 AND customer_id=$2
@@ -324,29 +302,7 @@ router.post("/orders/:id/add-to-cart", requireCustomer, async (req, res) => {
   const customerId = req.session.customer_id;
   const orderId = Number(req.params.id);
 
-  
-  // ✅ Fill inferred values + UTR AFTER insert (prevents placeholder mismatch)
-  try {
-    await db.query(
-      `UPDATE orders SET
-         inferred_qty = const orderId = Number(req.params.id);
-
-  ,
-         inferred_delivery_day = $2,
-         inferred_subtotal = $3,
-         inferred_delivery_charge = $4,
-         inferred_total = $5,
-         inferred_address_snapshot = $6,
-         payment_utr = $7,
-         payment_requested_at = CASE WHEN $8 = 'UPI' THEN COALESCE(payment_requested_at, NOW()) ELSE payment_requested_at END,
-         updated_at = NOW()
-       WHERE id = $9`,
-      [inferred_qty, inferred_day, itemsSubtotal, delivery_charge, total, address, payment_utr, payment_method, orderId]
-    );
-  } catch (e) {
-    console.error("INFERRED UPDATE ERROR:", e);
-  }
-const o = await db.query(
+  const o = await db.query(
     `SELECT id FROM orders WHERE id=$1 AND customer_id=$2 LIMIT 1`,
     [orderId, customerId]
   );
@@ -485,34 +441,12 @@ const inferred_day = (String(delivery_day || "").toLowerCase() === "tomorrow") ?
        'DRAFT', 'UNPAID', $7, $2, $4, $8, $9, $10,
        'QUEUE', 'CONFIRMED')
      RETURNING id`,
-    [customerId, itemsSubtotal, delivery_charge, total, delivery_day, address, payment_method, lat, lng, delivery_date]
+    [customerId, itemsSubtotal, delivery_charge, total, delivery_day, address, payment_method, lat, lng, delivery_date, inferred_qty, inferred_day, payment_utr]
   );
 
   const orderId = orderIns.rows[0].id;
 
-  
-  // ✅ Fill inferred values + UTR AFTER insert (prevents placeholder mismatch)
-  try {
-    await db.query(
-      `UPDATE orders SET
-         inferred_qty = const orderId = orderIns.rows[0].id;
-
-  ,
-         inferred_delivery_day = $2,
-         inferred_subtotal = $3,
-         inferred_delivery_charge = $4,
-         inferred_total = $5,
-         inferred_address_snapshot = $6,
-         payment_utr = $7,
-         payment_requested_at = CASE WHEN $8 = 'UPI' THEN COALESCE(payment_requested_at, NOW()) ELSE payment_requested_at END,
-         updated_at = NOW()
-       WHERE id = $9`,
-      [inferred_qty, inferred_day, itemsSubtotal, delivery_charge, total, address, payment_utr, payment_method, orderId]
-    );
-  } catch (e) {
-    console.error("INFERRED UPDATE ERROR:", e);
-  }
-for (const sid of Object.keys(cart)) {
+  for (const sid of Object.keys(cart)) {
     const qty = Number(cart[sid] || 0);
     if (!(qty > 0)) continue;
     const price = priceMap.get(String(sid)) || 0;
@@ -556,5 +490,4 @@ router.post("/orders/:id/upi-confirm", requireCustomer, async (req, res) => {
 });
 
 module.exports = router;
-
 

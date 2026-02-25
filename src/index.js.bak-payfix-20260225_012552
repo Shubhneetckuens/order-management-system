@@ -336,49 +336,45 @@ app.post("/admin/orders/:id/payment", async (req, res) => {
   const id = req.params.id;
   const { payment_status, payment_method, payment_note, payment_utr } = req.body;
 
-  try {
-    if (String(payment_status || "").toUpperCase() === "PAID") {
-      await db.query(
-        `UPDATE orders SET
-           payment_status='PAID',
-           payment_method=$1,
-           payment_note=$2,
-           payment_utr=$3,
-           paid_at=NOW(),
-           updated_at=NOW()
-         WHERE id=$4`,
-        [payment_method || null, payment_note || null, payment_utr || null, id]
-      );
-    } else if (String(payment_status || "").toUpperCase() === "PENDING_VERIFICATION") {
-      await db.query(
-        `UPDATE orders SET
-           payment_status='PENDING_VERIFICATION',
-           payment_method=$1,
-           payment_note=$2,
-           payment_utr=$3,
-           paid_at=NULL,
-           updated_at=NOW()
-         WHERE id=$4`,
-        [payment_method || null, payment_note || null, payment_utr || null, id]
-      );
-    } else {
-      await db.query(
-        `UPDATE orders SET
-           payment_status='UNPAID',
-           payment_method=NULL,
-           payment_note=NULL,
-           payment_utr=NULL,
-           paid_at=NULL,
-           updated_at=NOW()
-         WHERE id=$1`,
-        [id]
-      );
-    }
-  } catch (e) {
-    console.error("PAYMENT UPDATE ERROR:", e);
+  if (payment_status === "PAID") {
+    await db.query(
+      UPDATE orders SET
+        payment_status='PAID',
+        payment_method=,
+        payment_note=,
+        payment_utr=,
+        paid_at=NOW(),
+        updated_at=NOW()
+       WHERE id=,
+      [payment_method || null, payment_note || null, payment_utr || null, id]
+    );
+  } else if (payment_status === "PENDING_VERIFICATION") {
+    await db.query(
+      UPDATE orders SET
+        payment_status='PENDING_VERIFICATION',
+        payment_method=,
+        payment_note=,
+        payment_utr=,
+        paid_at=NULL,
+        updated_at=NOW()
+       WHERE id=,
+      [payment_method || null, payment_note || null, payment_utr || null, id]
+    );
+  } else {
+    await db.query(
+      UPDATE orders SET
+        payment_status='UNPAID',
+        payment_method=NULL,
+        payment_note=NULL,
+        payment_utr=NULL,
+        paid_at=NULL,
+        updated_at=NOW()
+       WHERE id=,
+      [id]
+    );
   }
 
-  res.redirect(`/admin/orders/${id}?key=${req.query.key}`);
+  res.redirect(/admin/orders/?key=);
 });/**
  * -------------------------
  * WHATSAPP WEBHOOK ROUTES
@@ -811,8 +807,6 @@ app.get("/img/sub/:id", async (req, res) => {
     return res.status(500).end();
   }
 });
-
-
 
 
 
