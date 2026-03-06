@@ -13,20 +13,14 @@ module.exports = {
     try {
       const tid = getTenantId() || 1;
 
-      await client.query("BEGIN");
+      console.log("DB TENANT =>", tid, "| SQL =>", String(text).replace(/\s+/g, " ").slice(0, 120));
+
       await client.query(
         "SELECT set_config('app.tenant_id', $1, true)",
         [String(tid)]
       );
 
-      console.log("[DB][tenant]", tid, "|", String(text).replace(/\s+/g, " ").trim().slice(0, 200));
-
-      const result = await client.query(text, params);
-      await client.query("COMMIT");
-      return result;
-    } catch (err) {
-      try { await client.query("ROLLBACK"); } catch (_) {}
-      throw err;
+      return await client.query(text, params);
     } finally {
       client.release();
     }

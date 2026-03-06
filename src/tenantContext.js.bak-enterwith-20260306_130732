@@ -1,0 +1,26 @@
+const { AsyncLocalStorage } = require("async_hooks");
+const als = new AsyncLocalStorage();
+
+function tenantMiddleware(req, res, next) {
+  // tenant selection: ?tenant=ID -> store in session -> default 1
+  const q = req.query && req.query.tenant ? parseInt(req.query.tenant, 10) : null;
+  if (q && Number.isFinite(q) && q > 0) {
+    req.session = req.session || {};
+    req.session.tenant_id = q;
+  }
+
+  const tid = (req.session && req.session.tenant_id) ? parseInt(req.session.tenant_id, 10) : 1;
+
+  als.run({ tenant_id: tid }, () => {
+    req.tenant_id = tid;
+    res.locals.tenant_id = tid;
+    next();
+  });
+}
+
+function getTenantId() {
+  const store = als.getStore();
+  return store && store.tenant_id ? store.tenant_id : 1;
+}
+
+module.exports = { tenantMiddleware, getTenantId };

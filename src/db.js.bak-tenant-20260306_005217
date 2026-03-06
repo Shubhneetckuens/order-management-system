@@ -1,0 +1,23 @@
+﻿const { Pool } = require("pg");
+const { getTenantId } = require("./tenantContext");
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL && (
+      process.env.DATABASE_URL.includes("railway") ||
+      process.env.DATABASE_URL.includes("render")  ||
+      process.env.DATABASE_URL.includes("neon")    ||
+      process.env.DATABASE_URL.includes("supabase")
+    )
+    ? { rejectUnauthorized: false }
+    : false,
+});
+
+module.exports = {
+  query: async (text, params) => {
+    const tid = getTenantId();
+    // set tenant for this connection/session, then run original query
+    await pool.query("SELECT set_config('app.tenant_id', , true)", [String(tid)]);
+    return pool.query(text, params);
+  }
+};
+

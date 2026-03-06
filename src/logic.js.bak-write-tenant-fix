@@ -6,7 +6,7 @@ function isNumber(str) {
 }
 
 async function getSettings() {
-  const res = await db.query("SELECT * FROM settings ORDER BY id ASC LIMIT 1");
+  const res = await db.query("SELECT * FROM settings WHERE id=1");
   return res.rows[0];
 }
 
@@ -15,7 +15,7 @@ async function getOrCreateCustomer(phone) {
   if (found.rows[0]) return found.rows[0];
 
   const created = await db.query(
-    "INSERT INTO customers (tenant_id, phone, stage) VALUES (current_setting('app.tenant_id', true)::int, $1, 'ASK_QTY') RETURNING *",
+    "INSERT INTO customers (phone, stage) VALUES ($1, 'ASK_QTY') RETURNING *",
     [phone]
   );
   return created.rows[0];

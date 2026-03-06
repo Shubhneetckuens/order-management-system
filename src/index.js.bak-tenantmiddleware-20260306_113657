@@ -66,11 +66,6 @@ app.use(session({
 }));
 
 app.use(tenantMiddleware);
-
-app.use((req, res, next) => {
-  console.log("[REQ]", req.method, req.url, "| sessionTenant=", req.session && req.session.tenant_id, "| reqTenant=", req.tenant_id, "| isAdmin=", req.session && req.session.isAdmin);
-  next();
-});
 app.get("/admin/lang", (req, res) => {
   const l = String(req.query.l || "en");
   req.session.lang = supported.includes(l) ? l : "en";
@@ -89,16 +84,16 @@ app.get("/", (req, res) => res.send("Order Management System ✅ Running"));
  * -------------------------
  */
 
-// /admin -> redirect properly
+// Support /admin -> redirect to proper place
 app.get("/admin", (req, res) => {
   if (req.session && req.session.isAdmin) {
-    return res.redirect("/admin/orders?tab=QUEUE");
+    return res.redirect("/admin/orders?status=DRAFT");
   }
   const tid = (req.session && req.session.tenant_id) ? req.session.tenant_id : (req.query.tenant || "");
   return res.redirect(tid ? `/login?tenant=${tid}` : "/login");
 });
 
-// /admin/login -> redirect to /login with tenant
+// Support /admin/login?tenant=2
 app.get("/admin/login", (req, res) => {
   const tid = req.query.tenant ? String(req.query.tenant) : "";
   return res.redirect(tid ? `/login?tenant=${tid}` : "/login");
@@ -106,52 +101,21 @@ app.get("/admin/login", (req, res) => {
 
 app.get("/login", async (req, res) => {
   const qTenant = req.query.tenant ? parseInt(req.query.tenant, 10) : null;
-  const currentTenant = req.session && req.session.tenant_id ? parseInt(req.session.tenant_id, 10) : null;
-
-  if (qTenant && Number.isFinite(qTenant) && qTenant > 0 && qTenant !== currentTenant) {
-    return req.session.regenerate(async (err) => {
-      if (err) {
-        console.error("SESSION REGENERATE ERROR:", err.message);
-        return res.status(500).send("Session error");
-      }
-
-      req.session.tenant_id = qTenant;
-
-      let tenantName = `Vendor ${qTenant}`;
-      try {
-        const t = await db.query("SELECT id, name FROM tenants WHERE id=$1", [qTenant]);
-        if (t.rowCount) tenantName = t.rows[0].name;
-      } catch (e) {
-        console.error("LOGIN TENANT LOAD ERROR:", e.message);
-      }
-
-      return res.render("admin/login", {
-        error: null,
-        tenant_id: qTenant,
-        tenant_name: tenantName
-      });
-    });
-  }
-
   if (qTenant && Number.isFinite(qTenant) && qTenant > 0) {
     req.session.tenant_id = qTenant;
   }
 
   const tenantId = (req.session && req.session.tenant_id) ? req.session.tenant_id : 1;
-
   let tenantName = `Vendor ${tenantId}`;
+
   try {
     const t = await db.query("SELECT id, name FROM tenants WHERE id=$1", [tenantId]);
     if (t.rowCount) tenantName = t.rows[0].name;
   } catch (e) {
-    console.error("LOGIN TENANT LOAD ERROR:", e.message);
+    console.error("TENANT LOGIN LOAD ERROR:", e.message);
   }
 
-  res.render("admin/login", {
-    error: null,
-    tenant_id: tenantId,
-    tenant_name: tenantName
-  });
+  res.render("admin/login", { error: null, tenant_id: tenantId, tenant_name: tenantName });
 });
 
 app.post("/login", async (req, res) => {
@@ -165,11 +129,9 @@ app.post("/login", async (req, res) => {
   const okUser = (process.env.ADMIN_USER || "admin").trim();
   const okPass = (process.env.ADMIN_PASS || "admin123").trim();
 
-  console.log("[LOGIN POST]", "bodyTenant=", bodyTenant, "| sessionTenant=", req.session && req.session.tenant_id);
-
   if (username === okUser && password === okPass) {
     req.session.isAdmin = true;
-    return res.redirect("/admin/orders?tab=QUEUE");
+    return res.redirect("/admin/orders?status=DRAFT");
   }
 
   const tenantId = (req.session && req.session.tenant_id) ? req.session.tenant_id : 1;
@@ -179,7 +141,7 @@ app.post("/login", async (req, res) => {
     const t = await db.query("SELECT id, name FROM tenants WHERE id=$1", [tenantId]);
     if (t.rowCount) tenantName = t.rows[0].name;
   } catch (e) {
-    console.error("LOGIN TENANT ERROR LOAD:", e.message);
+    console.error("TENANT LOGIN ERROR LOAD:", e.message);
   }
 
   return res.status(401).render("admin/login", {
@@ -627,7 +589,7 @@ app.get("/admin/products", async (req, res) => {
 app.post("/admin/products", async (req, res) => {
   const name = (req.body.name || "").trim();
   if (!name) return res.redirect("/admin/products?toast=Enter product name");
-  await db.query("INSERT INTO products (tenant_id, name) VALUES ($1, $2) ON CONFLICT (tenant_id, name) DO NOTHING", [req.tenant_id, name]);
+  await db.query("INSERT INTO products (name) VALUES ($1) ON CONFLICT (name) DO NOTHING", [name]);
   res.redirect("/admin/products?toast=Product added");
 });
 
@@ -678,15 +640,15 @@ app.post("/admin/sub-products", upload.single("image"), async (req, res) => {
   }
 
   await db.query(
-    `INSERT INTO sub_products (tenant_id, product_id, name, price_per_unit, unit_label, image_blob, image_mime)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     ON CONFLICT (tenant_id, product_id, name)
+    `INSERT INTO sub_products (product_id, name, price_per_unit, unit_label, image_blob, image_mime)
+     VALUES ($1,$2,$3,$4,$5,$6)
+     ON CONFLICT (product_id, name)
      DO UPDATE SET
        price_per_unit=EXCLUDED.price_per_unit,
        unit_label=EXCLUDED.unit_label,
        image_blob=COALESCE(EXCLUDED.image_blob, sub_products.image_blob),
        image_mime=COALESCE(EXCLUDED.image_mime, sub_products.image_mime)`,
-    [req.tenant_id, product_id, name, price, unit, img ? img.buf : null, img ? img.mime : null]
+    [product_id, name, price, unit, img ? img.buf : null, img ? img.mime : null]
   );
 
   res.redirect("/admin/sub-products?toast=Saved");
@@ -712,8 +674,8 @@ app.post("/admin/products/create-with-subs",
 
       // Create product
       const product = (await db.query(
-        "INSERT INTO products (tenant_id, name) VALUES ($1, $2) ON CONFLICT (tenant_id, name) DO UPDATE SET name=EXCLUDED.name RETURNING *",
-        [req.tenant_id, productName]
+        "INSERT INTO products (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name=EXCLUDED.name RETURNING *",
+        [productName]
       )).rows[0];
 
       // Normalize arrays from form
@@ -735,15 +697,15 @@ app.post("/admin/products/create-with-subs",
         const mime = img ? img.mime : null;
 
         await db.query(
-          `INSERT INTO sub_products (tenant_id, product_id, name, price_per_unit, unit_label, image_blob, image_mime)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     ON CONFLICT (tenant_id, product_id, name)
-     DO UPDATE SET
-       price_per_unit=EXCLUDED.price_per_unit,
-       unit_label=EXCLUDED.unit_label,
-       image_blob=COALESCE(EXCLUDED.image_blob, sub_products.image_blob),
-       image_mime=COALESCE(EXCLUDED.image_mime, sub_products.image_mime)`,
-          [req.tenant_id, product.id, n, price, unit, blob, mime]
+          `INSERT INTO sub_products (product_id, name, price_per_unit, unit_label, image_blob, image_mime)
+           VALUES ($1,$2,$3,$4,$5,$6)
+           ON CONFLICT (product_id, name)
+           DO UPDATE SET
+             price_per_unit=EXCLUDED.price_per_unit,
+             unit_label=EXCLUDED.unit_label,
+             image_blob=COALESCE(EXCLUDED.image_blob, sub_products.image_blob),
+             image_mime=COALESCE(EXCLUDED.image_mime, sub_products.image_mime)`,
+          [product.id, n, price, unit, blob, mime]
         );
       }
 
@@ -792,7 +754,7 @@ app.post("/admin/orders/:id/items/add", async (req, res) => {
   await db.query(
     `INSERT INTO order_items (order_id, sub_product_id, qty, price_per_unit, subtotal)
      VALUES ($1,$2,$3,$4,$5,$6)`,
-    [req.tenant_id, orderId, subId, qty, price, subtotal]
+    [orderId, subId, qty, price, subtotal]
   );
 
   await recalcOrderTotals(orderId);
@@ -900,10 +862,6 @@ app.get("/img/sub/:id", async (req, res) => {
     return res.status(500).end();
   }
 });
-
-
-
-
 
 
 

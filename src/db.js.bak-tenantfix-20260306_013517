@@ -1,0 +1,21 @@
+﻿const { Pool } = require("pg");
+const { getTenantId } = require("./tenantContext");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: false
+});
+
+async function query(text, params) {
+  const tid = String(getTenantId() || 1);
+  const client = await pool.connect();
+  try {
+    // IMPORTANT: same connection pe set_config + actual query
+    await client.query("SELECT set_config('app.tenant_id', $1, true)", [tid]);
+    return await client.query(text, params);
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { query };
